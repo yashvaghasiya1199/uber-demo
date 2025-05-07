@@ -11,12 +11,17 @@ const usrRoute = require("./routes/user")
 const driverRoute = require("./routes/driver")
 const vehicleRoute = require("./routes/vehicle")
 const { signup } = require("./routes/user");
+const fileUpload = require("express-fileupload")
 
 // middelwere 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 const { driverauth } = require("./middelweres/driverauth");
 app.use(cookieparser())
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir: '/tmp/', // or any temp dir
+}));
 
 const startServer = async () => {
     try {

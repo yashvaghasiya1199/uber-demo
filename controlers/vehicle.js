@@ -1,5 +1,7 @@
 const vehicals = require("../models/vehicle")
 const jwt = require("jsonwebtoken")
+const Driver = require("../models/driver")
+const Vehicle = require("../models/vehicle")
 
 async function addVehicle(req, res) {
 
@@ -30,6 +32,7 @@ async function addVehicle(req, res) {
 
 
   return res.json({ msg: "add vehical", create })
+  
 }
 
 async function updateVehicle(req, res) {
@@ -55,7 +58,36 @@ async function updateVehicle(req, res) {
 
 }
 
+async function getDriverAllVehicles(req,res) {
+
+  const reqDriver = req.driver
+
+  const driverToken = jwt.verify(reqDriver, process.env.JWT_SECRET)
+
+  const driverId = driverToken.driverid
+  
+  try {
+    const driver = await Driver.findOne({
+      where: { id: driverId },
+      include: [{
+        model: Vehicle,  
+        required: false, 
+      }]
+    });
+
+    if (!driver) {
+      return { message: 'Driver not found' };
+    }
+
+    return res.json({driver});  
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error fetching data' };
+  }
+}
+
 module.exports = {
   addVehicle,
-  updateVehicle
+  updateVehicle,
+  getDriverAllVehicles
 }

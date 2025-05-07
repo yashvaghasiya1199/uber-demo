@@ -11,7 +11,11 @@ const driverlocation = sequelize.define('driverlocation', {
     },
     driverid: {
         type: DataTypes.UUID,
-        allowNull:false
+        allowNull:false,
+        references: {
+         model:'drivers',
+         key: 'id'
+        }
     },
     latitude: {
         type: DECIMAL(9,6),
