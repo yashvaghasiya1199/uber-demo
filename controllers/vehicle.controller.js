@@ -1,7 +1,7 @@
-const vehicals = require("../models/vehicle")
+const vehicals = require("../models/vehicle.model")
 const jwt = require("jsonwebtoken")
-const Driver = require("../models/driver")
-const Vehicle = require("../models/vehicle")
+const Driver = require("../models/driver.model")
+const Vehicle = require("../models/vehicle.model")
 
 async function addVehicle(req, res) {
 

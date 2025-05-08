@@ -1,4 +1,4 @@
-const Users = require("../models/user")
+const Users = require("../models/user.model")
 
 const {Op} = require("sequelize")
 

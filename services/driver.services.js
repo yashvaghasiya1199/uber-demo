@@ -1,4 +1,4 @@
-const driver = require("../models/driver")
+const driver = require("../models/driver.model")
 const {Op} = require("sequelize")
 
 

@@ -49,7 +49,7 @@ const Driver = sequelize.define('Driver', {
 });
 
 
-Driver.hasMany(require('./vehicle'), { foreignKey: 'driver_id' });
-Driver.hasMany(require("./driverlocation") , {foreignKey: 'driverid'})
+Driver.hasMany(require('./vehicle.model'), { foreignKey: 'driver_id' });
+Driver.hasMany(require("./driverlocation.model") , {foreignKey: 'driverid'})
 
 module.exports = Driver;

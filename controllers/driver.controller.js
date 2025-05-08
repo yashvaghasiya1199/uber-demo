@@ -1,6 +1,6 @@
 //  models
-const driverlocation = require("../models/driverlocation")
-const drivers = require("../models/driver")
+const driverlocation = require("../models/driverlocation.model")
+const drivers = require("../models/driver.model")
 
 const { findDriverUsernameandEmail } = require("../services/driver.services");
 const jwt = require("jsonwebtoken")
