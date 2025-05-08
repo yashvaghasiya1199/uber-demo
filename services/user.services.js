@@ -1,9 +1,9 @@
 const Users = require("../models/user")
 
 const {Op} = require("sequelize")
-const jwt = require("jsonwebtoken")
 
-async function finduserbyemalorusername(emailorusername){
+async function findUserByEmailorUsername(emailorusername){
+  
     console.log("emailorusername" , emailorusername);
 
     return await Users.findOne({
@@ -14,11 +14,7 @@ async function finduserbyemalorusername(emailorusername){
 
 
 }
-function genratetoken(payload){
- const createtoken =  jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"24H"})
- return createtoken
-}
+
 module.exports  = {
-    finduserbyemalorusername,
-    genratetoken
+  findUserByEmailorUsername,
 }

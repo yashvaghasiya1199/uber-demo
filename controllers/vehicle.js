@@ -86,8 +86,22 @@ async function getDriverAllVehicles(req,res) {
   }
 }
 
+async function findSingleVahicle(req,res){
+
+  let vehicleId = req.params.vehicleid
+
+  if (vehicleId){
+    return res.json({msg:"vehicleid roungh or vehicals not found"})
+  }
+
+  let findvehicle = await Vehicle.findOne({where:{id:vehicleId}})
+
+  return res.json({msg:findvehicle})
+  
+}
 module.exports = {
   addVehicle,
   updateVehicle,
-  getDriverAllVehicles
+  getDriverAllVehicles,
+  findSingleVahicle
 }

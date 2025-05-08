@@ -7,16 +7,17 @@ require("dotenv").config()
 
 
 // routes
-const usrRoute = require("./routes/user")
-const driverRoute = require("./routes/driver")
-const vehicleRoute = require("./routes/vehicle")
-const { signup } = require("./routes/user");
+const usrRoute = require("./routes/user.route")
+const driverRoute = require("./routes/driver.route")
+const vehicleRoute = require("./routes/vehicle.route")
+const rideRoute = require("./routes/ride.route")
 const fileUpload = require("express-fileupload")
 
 // middelwere 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
-const { driverauth } = require("./middelweres/driverauth");
+const { driverAuth } = require("./middelweres/driverauth");
+const { userAuth } = require("./middelweres/userauth");
 app.use(cookieparser())
 app.use(fileUpload({
   useTempFiles: true,
@@ -39,8 +40,12 @@ const startServer = async () => {
 
   //  route
   app.use("/api/user" ,usrRoute)
+
   app.use("/api/driver" , driverRoute)
-  app.use("/api/vehicle" , driverauth , vehicleRoute )
+
+  app.use("/api/vehicle" , driverAuth , vehicleRoute )
+
+  app.use("/api/ride" ,  userAuth ,rideRoute)
 
 app.listen(port,()=>console.log(`run on ${port}`))
 

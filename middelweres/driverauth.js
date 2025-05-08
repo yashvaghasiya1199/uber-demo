@@ -1,4 +1,4 @@
-function driverauth(req,res,next){
+function driverAuth(req,res,next){
 
     const token = req.cookies?.drivertoken
     if(!token){
@@ -10,5 +10,5 @@ function driverauth(req,res,next){
 }
 
 module.exports = { 
-    driverauth
+    driverAuth
 }

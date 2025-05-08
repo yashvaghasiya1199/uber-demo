@@ -1,10 +1,12 @@
-//  model
+//  models
 const driverlocation = require("../models/driverlocation")
 const drivers = require("../models/driver")
-const { findDriverUsernameAndEmail, driverTokenGenrate } = require("../services/driver");
+
+const { findDriverUsernameandEmail } = require("../services/driver.services");
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 const { where } = require("sequelize");
+const { jwtTokenCreate } = require("../utills/jwtToken.utill");
 const cloudinary = require("cloudinary").v2
 
 // for uploaddin profile image setup
@@ -18,18 +20,19 @@ cloudinary.config({
 
 async function driverSignup(req, res) {
 
-    const { first_name, last_name, email, username, password, phone, profileimage } = req.body;
+    const { first_name, last_name, email, username, password, phone,  } = req.body;
 
-    if (!first_name || !last_name || !email || !password || !phone || !username) {
+    if (!first_name || !last_name || !email || !password || !phone || !username ) {
         return res.status(400).json({ msg: "All required fields must be provided." });
     }
 
     const file = req.files.profileimage
     console.log(file);
+    
+
+    // if file > 1 mb then user can't upload image
 
     const maxSize = 1 * 1024 * 1024;
-
-    // if file < 1 mb then user can't upload image
 
     if (file.size > maxSize) {
         return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
@@ -49,7 +52,7 @@ async function driverSignup(req, res) {
         return res.status(500).json({ msg: "Image upload failed." });
     }
 
-    const existingDriver = await findDriverUsernameAndEmail(email);
+    const existingDriver = await findDriverUsernameandEmail(email);
     if (existingDriver) {
         return res.json({ msg: "Email or username already exists." });
     }
@@ -77,7 +80,8 @@ async function driverLogin(req, res) {
         return res.json({ msg: "Please enter both fields" });
     }
 
-    let driver = await findDriverUsernameAndEmail(emailorusername);
+    let driver = await findDriverUsernameandEmail(emailorusername);
+
     if (!driver) {
         return res.json({ msg: "Invalid username or password" });
     }
@@ -89,14 +93,18 @@ async function driverLogin(req, res) {
     }
 
     const payload = { driverid: driver.id };
-    const jwtCreate = driverTokenGenrate(payload);
+
+    const jwtCreate = jwtTokenCreate(payload);
+
     res.cookie("drivertoken", jwtCreate);
 
     return res.json({ msg: "Driver login success", driver });
+
 }
 
 //  profile update for driver
 async function driverProfilUpdate(req, res) {
+
     const driverToken = req.cookies?.drivertoken
 
     const tokenVerify = jwt.verify(driverToken, process.env.JWT_SECRET)
@@ -105,7 +113,7 @@ async function driverProfilUpdate(req, res) {
 
     console.log("id", driverId);
 
-    
+
 
     if (!driverId) {
         return res.json({ msg: "driver id not enter by user" })
@@ -114,13 +122,13 @@ async function driverProfilUpdate(req, res) {
     // const { first_name, last_name, email, profile, phone } = req.body
 
     const {
-        first_name ,
-        last_name ,
-        email ,
+        first_name,
+        last_name,
+        email,
         profile,
         phone
-      } = req.body || {};
-      
+    } = req.body || {};
+
 
     if (!first_name && !last_name && !email && !profile && !phone && !file) {
         return res.json({ msg: "no fild for update atleast enter one fild for update" })
@@ -138,13 +146,14 @@ async function driverProfilUpdate(req, res) {
         email: email || driver.email,
         profile: profile || driver.profile,
         phone: phone || driver.phone,
-        
+
     })
 
     return res.json({ msg: "driver update successfull", updatedriver })
 }
 
 async function driverLocations(req, res) {
+    
     const { latitude, longitude } = req.body;
 
     const drivertoken = req.cookies?.drivertoken
@@ -169,10 +178,15 @@ async function driverLocations(req, res) {
 
 }
 
-async function driverupdateProfileImage(req,res){
+async function driverupdateProfileImage(req, res) {
 
     const file = req.files.profileimage
     console.log(file);
+
+    if (!file) {
+        return res.json({ msg: "Please select image" })
+    }
+    
     const drivertoken = req.cookies?.drivertoken
 
     const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
@@ -181,12 +195,14 @@ async function driverupdateProfileImage(req,res){
 
     const maxSize = 10 * 1024 * 1024;
 
-    const driver = await drivers.findOne({where:{id:driverId}})
+    const driver = await drivers.findOne({ where: { id: driverId } })
 
-    if(!driver){
-        return res.json({msg:"driver not found"})
+    if (!driver) {
+        return res.json({ msg: "driver not found" })
     }
+
     // if file < 1 mb then user can't upload image
+
     if (file.size > maxSize) {
         return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
     }
@@ -196,11 +212,11 @@ async function driverupdateProfileImage(req,res){
         uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             //  resource_type: "video"  // for uploading videos
         });
-        
+
         const updatedriver = await driver.update({
-      profile_image:uploadResult.url
+            profile_image: uploadResult.url
         })
-        return res.json({msg:"image update successfull" , data:uploadResult.url})
+        return res.json({ msg: "image update successfull", data: uploadResult.url })
 
     } catch (err) {
         console.error("Cloudinary Upload Error:", err);
@@ -219,8 +235,8 @@ async function getDriverAllLocation(req, res) {
         const driver = await drivers.findOne({
             where: { id: driverId },
             include: [{
-                model: driverlocation,  // Include the vehicles related to the driver
-                required: false,  // Ensure it returns even if there are no vehicles
+                model: driverlocation,  
+                required: false,  
             }]
         });
 
@@ -228,7 +244,7 @@ async function getDriverAllLocation(req, res) {
             return { message: 'Driver not found' };
         }
 
-        return res.json({ driver });  // This will return driver with all associated vehicles
+        return res.json({ driver });  
     } catch (error) {
         console.error(error);
         return { message: 'Error fetching data' };

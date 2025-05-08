@@ -1,8 +1,9 @@
 const driver = require("../models/driver")
 const {Op} = require("sequelize")
-const jwt = require("jsonwebtoken")
 
-async function findDriverUsernameAndEmail(emailorusername){
+
+async function findDriverUsernameandEmail(emailorusername){
+  
     // console.log("emailorusername",emailorusername);
     return await driver.findOne({
         where: {
@@ -11,11 +12,7 @@ async function findDriverUsernameAndEmail(emailorusername){
       });
   
 }
-function driverTokenGenrate(payload){
- const jwtcreate = jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"24h"})
- return jwtcreate
-}
+
 module.exports = {
-     findDriverUsernameAndEmail,
-     driverTokenGenrate
+     findDriverUsernameandEmail,
 }

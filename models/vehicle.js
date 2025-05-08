@@ -37,13 +37,12 @@ const Vehicle = sequelize.define('Vehicle', {
   },
   deleted_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
   },
 }, {
 
   tableName: 'vehicles',
   timestamps: true,
-  
+
 });
 
 module.exports = Vehicle;

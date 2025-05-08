@@ -1,10 +1,9 @@
 const Driver = require('../model/driver');
 const Vehicle = require('../model/vehicle');
 
-// One-to-Many Relationship
 Driver.hasMany(Vehicle, {
-  foreignKey: 'driver_id',   // Vehicle મોડલમાં foreign key
-  as: 'vehicles'             // alias name (optional)
+  foreignKey: 'driver_id',
+  as: 'vehicles'          
 });
 
 Vehicle.belongsTo(Driver, {

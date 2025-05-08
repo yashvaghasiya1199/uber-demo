@@ -33,6 +33,7 @@ const Driver = sequelize.define('Driver', {
   profile_image: {
     type: DataTypes.TEXT,
     allowNull: true,
+    defaultValue: 'https://res.cloudinary.com/dkfhw2v5x/image/upload/v1746678762/default-profile_en2vne.jpg'
   },
   phone: {
     type: DataTypes.STRING(20),
