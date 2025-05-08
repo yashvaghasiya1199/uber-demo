@@ -1,61 +1,62 @@
-const {DataTypes, DECIMAL} = require("sequelize")
-const sequelize = require("../config/db")
 
-const ride = sequelize.define("ride" , { 
- ride_id:{
-    type:DataTypes.UUID,
-    defaultValue:DataTypes.UUIDV4,
-    primaryKey:true,
-    allowNull:false
- },
- user_id: {
+const { DataTypes, DECIMAL } = require("sequelize");
+const sequelize = require("../config/db");
+
+const ride = sequelize.define("ride", {
+  ride_id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false
+  },
+  user_id: {
     type: DataTypes.UUID,
     allowNull: false
- },
- driver_id: {
+  },
+  driver_id: {
     type: DataTypes.UUID,
-    allowNull:false
- },
- vehicle_id:{
+    allowNull: false
+  },
+  vehicle_id: {
     type: DataTypes.UUID,
-    allowNull: false,
- },
- pickup_latitude:{
-    type: DECIMAL(9,6),
     allowNull: false
- },
- pickup_longitude:{
-    type: DECIMAL(9,6),
+  },
+  pickup_latitude: {
+    type: DECIMAL(9, 6),
     allowNull: false
- },
- drop_latitude:{
-    type: DECIMAL(9,6),
+  },
+  pickup_longitude: {
+    type: DECIMAL(9, 6),
     allowNull: false
- },
- drop_longitude:{
-    type: DECIMAL(9,6),
+  },
+  drop_latitude: {
+    type: DECIMAL(9, 6),
     allowNull: false
- },
- status: {
-    type: DataTypes.ENUM('pending', 'accepted', 'ongoing', 'completed', 'cancelled'),
-    allowNull:false
- },
- fare_amount: {
-    type: DataTypes.DECIMAL(10,2)
- },
- booked_at: {
+  },
+  drop_longitude: {
+    type: DECIMAL(9, 6),
+    allowNull: false
+  },
+  status: {
+    type: DataTypes.ENUM("pending", "accepted", "ongoing", "completed", "cancelled"),
+    allowNull: false
+  },
+  fare_amount: {
+    type: DataTypes.DECIMAL(10, 2)
+  },
+  booked_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
- },
- completed_at: {
+    defaultValue: DataTypes.NOW
+  },
+  completed_at: {
     type: DataTypes.DATE,
     defaultValue: null
- }
+  }
+}, {
+  tableName: "ride",
+  timestamps: true
+});
 
-},{
-    tableName:'ride',
-    timestam: true
-})
+ride.hasMany(require("./review.model"), { foreignKey: 'ride_id' });
 
-
-module.exports = ride
+module.exports = ride;

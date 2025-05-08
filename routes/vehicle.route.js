@@ -1,5 +1,5 @@
 const express = require("express")
-const { addVehicle, updateVehicle, getDriverAllVehicles, findSingleVahicle } = require("../controllers/vehicle")
+const { addVehicle, updateVehicle, getDriverAllVehicles, findSingleVahicle } = require("../controllers/vehicle.controller")
 const route = express()
 const { driverAuth } = require("../middelweres/driverauth")
 

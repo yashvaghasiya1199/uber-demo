@@ -1,5 +1,5 @@
 const express = require("express")
-const { driverSignup, driverLogin, driverProfilUpdate, driverLocations, getDriverAllLocation, driverupdateProfileImage } = require("../controllers/driver")
+const { driverSignup, driverLogin, driverProfilUpdate, driverLocations, getDriverAllLocation, driverupdateProfileImage } = require("../controllers/driver.controller")
 const { driverAuth } = require("../middelweres/driverauth")
 const route = express.Router()
 

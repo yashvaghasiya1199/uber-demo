@@ -3,12 +3,12 @@ const Vehicle = require('../model/vehicle');
 
 Driver.hasMany(Vehicle, {
   foreignKey: 'driver_id',
-  as: 'vehicles'          
+  as: 'vehicles',
 });
 
 Vehicle.belongsTo(Driver, {
   foreignKey: 'driver_id',
-  as: 'driver'
+  as: 'driver',
 });
 
 module.exports = {
