@@ -1,6 +1,7 @@
 //  models
 const driverlocation = require("../models/driverlocation.model")
 const drivers = require("../models/driver.model")
+const driverDocumetModel = require("../models/driverdocument.model")
 
 const { findDriverUsernameandEmail } = require("../services/driver.services");
 const jwt = require("jsonwebtoken")
@@ -251,11 +252,72 @@ async function getDriverAllLocation(req, res) {
     }
 }
 
+//  driver's document uploads
+async function  driverDocument(req,res){
+
+    // file uploads
+    const pancardfile = req.files.pancard
+    const uploadAadharFront = req.files.aadharfront
+    const uploadAadharBack = req.files.aadharback
+
+
+    const maxSize = 1 * 1024 * 1024;
+    
+//  for pancard
+
+    let uploadPanncard;
+    if(pancardfile){
+        if (pancardfile.size > maxSize) {
+            return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
+        }
+        try {
+            uploadPanncard= await cloudinary.uploader.upload(pancardfile.tempFilePath)
+            
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
+
+    // for aadharfront amd back
+    let aadharFront;
+    let aadharback;
+    if(uploadAadharFront && uploadAadharBack){
+        // for front image
+        aadharFront = await cloudinary.uploader.upload(uploadAadharFront.tempFilePath)
+
+        // for back image
+        aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
+        // console.log("aadhar back" ,aadharback);
+        
+    }else{
+        return res.json({msg:"both side image upload"})
+     }
+
+  const drivertoken = req.cookies?.drivertoken
+
+  const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
+
+  const driverId = tokenVerify.driverid
+  
+const create = await driverDocumetModel.create({
+    driver_id:driverId,
+    pancard: uploadPanncard? uploadPanncard.url : null,
+    aadharcard_front: uploadAadharFront? aadharFront.url :null,
+    aadharcard_back: uploadAadharBack? aadharback.url:  null
+    
+})
+
+  return res.json({msg:"file upload successfull",data:create})
+
+}
+
+
 module.exports = {
     driverSignup,
     driverLogin,
     driverProfilUpdate,
     driverupdateProfileImage,
     driverLocations,
-    getDriverAllLocation
+    getDriverAllLocation,
+    driverDocument
 }

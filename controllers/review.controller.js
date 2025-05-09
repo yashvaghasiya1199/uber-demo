@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken")
 const Review = require("../models/review.model");
 const Ride = require("../models/ride.model");
+const validator = require("validator")
  
 async function postReview (req, res)  {
   try {
@@ -12,9 +13,13 @@ async function postReview (req, res)  {
 
     const { ride_id, rating } = req.body;
 
+    const uuidValidation = validator.isUUID(ride_id)
+
+    if(!uuidValidation){
+      return res.json({msg:"invalid uuid enter"})
+    }
 
     const ride = await Ride.findOne({ where: { ride_id:ride_id } });
-    console.log(ride_id);
     
 
     if (!ride) {
@@ -54,7 +59,39 @@ async function postReview (req, res)  {
   }
 };
 
+async function deleteReview(req,res){
+
+  const reviewId = req.params.reviewid
+
+  const userToken = req.user
+
+  const tokenVerify  = jwt.verify(userToken,process.env.JWT_SECRET)
+
+  const userId = tokenVerify.userid; 
+
+
+  if(!reviewId){
+    return res.json({msg:"please provide review id"})
+  }
+
+  const findReview = await Review.findOne({where:{id:reviewId}})
+
+  // only that user delete review who create
+  if (findReview.user_id !== userId) {
+    return res.status(403).json({ message: "You are not allowed to review this ride" });
+  }
+
+
+  if(!findReview){
+    return res.josn({msg:"review can't find"})
+  }
+
+  await findReview.destroy()
+
+  return res.json({msg:"review delete success"})
+}
 
 module.exports = {
-    postReview
+    postReview,
+    deleteReview
 }

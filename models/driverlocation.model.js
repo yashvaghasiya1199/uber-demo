@@ -1,6 +1,5 @@
 const { DataTypes, UUID, DECIMAL } = require("sequelize")
 const sequelize = require("../config/db")
-const { types } = require("pg")
 
 const driverlocation = sequelize.define('driverlocation', {
     id: {

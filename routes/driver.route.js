@@ -1,5 +1,5 @@
 const express = require("express")
-const { driverSignup, driverLogin, driverProfilUpdate, driverLocations, getDriverAllLocation, driverupdateProfileImage } = require("../controllers/driver.controller")
+const { driverSignup, driverLogin, driverProfilUpdate, driverLocations, getDriverAllLocation, driverupdateProfileImage, driverDocument } = require("../controllers/driver.controller")
 const { driverAuth } = require("../middelweres/driverauth")
 const route = express.Router()
 
@@ -14,7 +14,10 @@ route.put("/updateprofileimage" , driverAuth ,  driverupdateProfileImage)
 
 route.post("/addlocation" , driverAuth , driverLocations )
 
+route.post("/adddocument" , driverDocument )
+
 //  all location of one driver
-route.get("/alllocation" , getDriverAllLocation )
+route.get("/alllocation" ,driverAuth ,getDriverAllLocation )
+
 
 module.exports = route
