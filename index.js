@@ -57,12 +57,4 @@ const startServer = async () => {
 app.listen(port,()=>console.log(`run on ${port}`))
 
 
-// Hello @Harshil Bodara Sir,
-// Here are the latest updates for uber project as of Date: May 09, 2025,
-// List of Completed Tasks:
-//     1) I have completed user can review on their particular ride. [Done]
-//     2) I also provide feature when user can delete ride and review  [Done]
-//     3) T have also completed driver's document model and upload their document . [Done]
-// List of In-Progress Task:
-//     1) Currently, I work on update document for drivers and also add more feature. [In-Progress]
-// Thanks!
+
