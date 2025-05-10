@@ -278,7 +278,7 @@ async function  driverDocument(req,res){
         }
     }
 
-    // for aadharfront amd back
+    // for aadharfront and back
     let aadharFront;
     let aadharback;
     if(uploadAadharFront && uploadAadharBack){
@@ -311,6 +311,11 @@ const create = await driverDocumetModel.create({
 
 }
 
+async function updateDriverDocument(){
+
+
+
+}
 
 module.exports = {
     driverSignup,
@@ -319,5 +324,6 @@ module.exports = {
     driverupdateProfileImage,
     driverLocations,
     getDriverAllLocation,
-    driverDocument
+    driverDocument,
+    updateDriverDocument,
 }
