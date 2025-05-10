@@ -2,6 +2,7 @@
 const driverlocation = require("../models/driverlocation.model")
 const drivers = require("../models/driver.model")
 const driverDocumetModel = require("../models/driverdocument.model")
+const Vehicle = require("../models/vehicle.model")
 
 const { findDriverUsernameandEmail } = require("../services/driver.services");
 const jwt = require("jsonwebtoken")
@@ -21,15 +22,15 @@ cloudinary.config({
 
 async function driverSignup(req, res) {
 
-    const { first_name, last_name, email, username, password, phone,  } = req.body;
+    const { first_name, last_name, email, username, password, phone, } = req.body;
 
-    if (!first_name || !last_name || !email || !password || !phone || !username ) {
+    if (!first_name || !last_name || !email || !password || !phone || !username) {
         return res.status(400).json({ msg: "All required fields must be provided." });
     }
 
     const file = req.files.profileimage
     console.log(file);
-    
+
 
     // if file > 1 mb then user can't upload image
 
@@ -154,7 +155,7 @@ async function driverProfilUpdate(req, res) {
 }
 
 async function driverLocations(req, res) {
-    
+
     const { latitude, longitude } = req.body;
 
     const drivertoken = req.cookies?.drivertoken
@@ -182,12 +183,11 @@ async function driverLocations(req, res) {
 async function driverupdateProfileImage(req, res) {
 
     const file = req.files.profileimage
-    console.log(file);
 
     if (!file) {
         return res.json({ msg: "Please select image" })
     }
-    
+
     const drivertoken = req.cookies?.drivertoken
 
     const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
@@ -197,6 +197,13 @@ async function driverupdateProfileImage(req, res) {
     const maxSize = 10 * 1024 * 1024;
 
     const driver = await drivers.findOne({ where: { id: driverId } })
+
+    // ? for delete avliable image 
+    const url = await driver.profile_image
+    const parts = url.split("/")
+    const fileWithExt = parts[parts.length - 1]
+    const publicId = fileWithExt.split('.')[0]
+    console.log("pid:", publicId);
 
     if (!driver) {
         return res.json({ msg: "driver not found" })
@@ -211,14 +218,20 @@ async function driverupdateProfileImage(req, res) {
     let uploadResult;
     try {
         uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+
             //  resource_type: "video"  // for uploading videos
         });
 
         const updatedriver = await driver.update({
             profile_image: uploadResult.url
         })
-        return res.json({ msg: "image update successfull", data: uploadResult.url })
+        // for remove image for clodinary
 
+        if (publicId) {
+            await cloudinary.uploader.destroy(publicId);
+        }
+
+        return res.json({ msg: "image update successfull", data: uploadResult.url })
     } catch (err) {
         console.error("Cloudinary Upload Error:", err);
         return res.status(500).json({ msg: "Image upload failed." });
@@ -236,8 +249,8 @@ async function getDriverAllLocation(req, res) {
         const driver = await drivers.findOne({
             where: { id: driverId },
             include: [{
-                model: driverlocation,  
-                required: false,  
+                model: driverlocation,
+                required: false,
             }]
         });
 
@@ -245,7 +258,7 @@ async function getDriverAllLocation(req, res) {
             return { message: 'Driver not found' };
         }
 
-        return res.json({ driver });  
+        return res.json({ driver });
     } catch (error) {
         console.error(error);
         return { message: 'Error fetching data' };
@@ -253,8 +266,18 @@ async function getDriverAllLocation(req, res) {
 }
 
 //  driver's document uploads
-async function  driverDocument(req,res){
+async function driverDocument(req, res) {
 
+    const drivertoken = req.cookies?.drivertoken
+
+    const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
+
+    const driverId = tokenVerify.driverid
+
+    const driver = await driverDocumetModel.findOne({ where: { driver_id: driverId } })
+ 
+    console.log(driver);
+    
     // file uploads
     const pancardfile = req.files.pancard
     const uploadAadharFront = req.files.aadharfront
@@ -262,17 +285,16 @@ async function  driverDocument(req,res){
 
 
     const maxSize = 1 * 1024 * 1024;
-    
-//  for pancard
+
+    //  for pancard
 
     let uploadPanncard;
-    if(pancardfile){
+    if (pancardfile) {
         if (pancardfile.size > maxSize) {
             return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
         }
         try {
-            uploadPanncard= await cloudinary.uploader.upload(pancardfile.tempFilePath)
-            
+            uploadPanncard = await cloudinary.uploader.upload(pancardfile.tempFilePath)
         } catch (error) {
             console.log(error.message);
         }
@@ -281,41 +303,138 @@ async function  driverDocument(req,res){
     // for aadharfront and back
     let aadharFront;
     let aadharback;
-    if(uploadAadharFront && uploadAadharBack){
+    if (uploadAadharFront && uploadAadharBack) {
         // for front image
         aadharFront = await cloudinary.uploader.upload(uploadAadharFront.tempFilePath)
 
         // for back image
         aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
         // console.log("aadhar back" ,aadharback);
-        
-    }else{
-        return res.json({msg:"both side image upload"})
-     }
 
-  const drivertoken = req.cookies?.drivertoken
+    } else {
+        return res.json({ msg: "both side image upload" })
+    }
 
-  const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
-
-  const driverId = tokenVerify.driverid
-  
-const create = await driverDocumetModel.create({
-    driver_id:driverId,
-    pancard: uploadPanncard? uploadPanncard.url : null,
-    aadharcard_front: uploadAadharFront? aadharFront.url :null,
-    aadharcard_back: uploadAadharBack? aadharback.url:  null
-    
-})
-
-  return res.json({msg:"file upload successfull",data:create})
-
-}
-
-async function updateDriverDocument(){
+   
 
 
+ 
+    if (publicId) {
+        await cloudinary.destroy(publicId)
+    }
+
+    const create = await driverDocumetModel.create({
+        driver_id: driverId,
+        pancard: uploadPanncard ? uploadPanncard.url : null,
+        aadharcard_front: uploadAadharFront ? aadharFront.url : null,
+        aadharcard_back: uploadAadharBack ? aadharback.url : null
+
+    })
+
+    return res.json({ msg: "file upload successfull", data: create })
 
 }
+
+async function updateDriverDocument(req, res) {
+
+    // file uploads
+    const pancardfile = req.files.pancard
+    const uploadAadharFront = req.files.aadharfront
+    const uploadAadharBack = req.files.aadharback
+
+    const drivertoken = req.cookies?.drivertoken
+
+    const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
+
+    const driverId = tokenVerify.driverid
+
+    let driver = await driverDocumetModel.findOne({ where: { driver_id: driverId } })
+
+    const maxSize = 1 * 1024 * 1024;
+
+    //  for pancard
+
+    let uploadPanncard;
+    if (pancardfile) {
+        if (pancardfile.size > maxSize) {
+            return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
+        }
+        try {
+            uploadPanncard = await cloudinary.uploader.upload(pancardfile.tempFilePath)
+            const url = await driver.pancard
+            if(url){
+                const parts = url.split("/")
+                const fileWithExt = parts[parts.length - 1]
+                const publicId = fileWithExt.split('.')[0]
+            }
+            
+
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
+
+    // for aadharfront and back
+    let aadharFront;
+    let aadharback;
+    if (uploadAadharFront && uploadAadharBack) {
+        // for front image
+        aadharFront = await cloudinary.uploader.upload(uploadAadharFront.tempFilePath)
+
+        // for back image
+        aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
+        // console.log("aadhar back" ,aadharback);
+
+    } else {
+        return res.json({ msg: "both side image upload" })
+    }
+
+    if (!driver) {
+        return res.json({ msg: "driver can not found" })
+    }
+
+    const updateDriverDoc = await driver.update({
+
+        driver_id: driverId,
+        pancard: uploadPanncard ? uploadPanncard.url : null,
+        aadharcard_front: uploadAadharFront ? aadharFront.url : null,
+        aadharcard_back: uploadAadharBack ? aadharback.url : null
+
+    })
+    console.log("pid:", updateDriverDoc);
+
+    return res.json({ msg: "driver profile update successfully", updateDriverDoc })
+}
+
+async function driverAllInformation(req, res) {
+    const { driverId } = req.params;
+
+    try {
+        const driverData = await drivers.findOne({
+            where: { id: driverId },
+            include: [
+                {
+                    model: Vehicle,
+                    as: 'Vehicles' 
+                },
+                {
+                    model: driverDocumetModel,
+                    as: 'DriverDocument' 
+                }
+            ]
+        });
+
+        if (!driverData) {
+            return res.status(404).json({ msg: 'Driver not found' });
+        }
+
+        return res.status(200).json({ driver: driverData });
+    } catch (error) {
+        console.error("Error fetching driver info:", error);
+        return res.status(500).json({ msg: 'Server error' });
+    }
+}
+
 
 module.exports = {
     driverSignup,
@@ -326,4 +445,5 @@ module.exports = {
     getDriverAllLocation,
     driverDocument,
     updateDriverDocument,
+    driverAllInformation
 }

@@ -1,6 +1,10 @@
 
 const { DataTypes } = require('sequelize');
 const sequelize = require("../config/db");
+const Vehicle = require('./vehicle.model');
+const DriverDocument = require('./driverdocument.model');
+const DriverLocation = require('./driverlocation.model');
+const { driverLocations } = require('../controllers/driver.controller');
 
 const Driver = sequelize.define('Driver', {
   id: {
@@ -48,7 +52,16 @@ const Driver = sequelize.define('Driver', {
   timestamps: true,
 });
 
-Driver.hasMany(require('./vehicle.model'), { foreignKey: 'driver_id'   });
-Driver.hasMany(require("./driverlocation.model") , {foreignKey: 'driverid' })
+Driver.hasMany(Vehicle, { foreignKey: 'driver_id'   });
+Driver.hasMany(DriverLocation , {foreignKey: 'driverid' })
+Driver.hasOne(DriverDocument, { foreignKey: 'driver_id' });
+
+//  for driver's all information
+
+
+Vehicle.belongsTo(Driver, { foreignKey: 'driver_id' });
+DriverDocument.belongsTo(Driver, { foreignKey: 'driver_id' });
+DriverLocation.belongsTo(Driver, { foreignKey: 'driverid' });
+
 
 module.exports = Driver;

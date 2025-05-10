@@ -1,5 +1,5 @@
-const Driver = require('../model/driver');
-const Vehicle = require('../model/vehicle');
+const Driver = require('../models/driver.model');
+const Vehicle = require('../models/vehicle.model');
 const Rides = require("../models/ride.model")
 const User = require("../models/user.model")
 
