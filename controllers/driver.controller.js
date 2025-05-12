@@ -3,12 +3,14 @@ const driverlocation = require("../models/driverlocation.model")
 const drivers = require("../models/driver.model")
 const driverDocumetModel = require("../models/driverdocument.model")
 const Vehicle = require("../models/vehicle.model")
+const reviews = require("../models/review.model")
 
 const { findDriverUsernameandEmail } = require("../services/driver.services");
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 const { where } = require("sequelize");
 const { jwtTokenCreate } = require("../utills/jwtToken.utill");
+const review = require("../models/review.model")
 const cloudinary = require("cloudinary").v2
 
 // for uploaddin profile image setup
@@ -406,34 +408,53 @@ async function updateDriverDocument(req, res) {
     return res.json({ msg: "driver profile update successfully", updateDriverDoc })
 }
 
-async function driverAllInformation(req, res) {
-    const { driverId } = req.params;
+async function driverAllInformation(req,res) {
+
+    const driverId = req.params.driverId
 
     try {
         const driverData = await drivers.findOne({
-            where: { id: driverId },
-            include: [
-                {
-                    model: Vehicle,
-                    as: 'Vehicles' 
-                },
-                {
-                    model: driverDocumetModel,
-                    as: 'DriverDocument' 
-                }
-            ]
+          where: { id: driverId },
+          include: [
+            {
+              model: driverDocumetModel,
+              as: 'driverdocument', 
+            },
+            {
+              model: Vehicle,
+              as: 'vehicles', // match the alias from your associations
+            },
+          ],
         });
-
+    
         if (!driverData) {
-            return res.status(404).json({ msg: 'Driver not found' });
+          return { message: 'Driver not found' };
         }
+    
+        return res.json({driverData});
+      } catch (error) {
+        console.error('Error fetching driver info:', error);
+        throw new Error('Error fetching driver info');
+      }
+    };
+    
+    async function AllDriverReviews(req,res) {
 
-        return res.status(200).json({ driver: driverData });
-    } catch (error) {
-        console.error("Error fetching driver info:", error);
-        return res.status(500).json({ msg: 'Server error' });
+        const drivertoken = req.cookies?.drivertoken
+
+        const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
+    
+        const driverId = tokenVerify.driverid
+        console.log(driverId);
+        
+
+        const findreview = await reviews.findAll({where:{driver_id:driverId}})
+
+        if(!findreview){
+            return res.json({msg:"driver have not review"})
+        }
+        return res.json({findreview})
     }
-}
 
 
 module.exports = {
@@ -445,5 +466,6 @@ module.exports = {
     getDriverAllLocation,
     driverDocument,
     updateDriverDocument,
-    driverAllInformation
+    driverAllInformation,
+    AllDriverReviews,
 }

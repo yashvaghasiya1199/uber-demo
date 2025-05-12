@@ -8,40 +8,122 @@ const User = require("../models/user.model");
 const driverLocation = require("../models/driverlocation.model")
 
 
+// async function createRide(req, res) {
+//   let { driver_id, vehicle_id, pickup_latitude, pickup_longitude, drop_latitude, drop_longitude, status } = req.body
+
+//   const userToken = req.user
+
+//   const debugToken = jwt.verify(userToken, process.env.JWT_SECRET)
+
+//   const userId = debugToken.userid
+
+//   let rideCreate;
+
+//   try {
+//     rideCreate = await Rides.create({
+//       user_id: userId,
+//       driver_id: driver_id,
+//       vehicle_id: vehicle_id,
+//       pickup_latitude: pickup_latitude,
+//       pickup_longitude: pickup_longitude,
+//       drop_latitude: drop_latitude,
+//       drop_longitude: drop_longitude,
+//       status: status,
+//       booked_at: new Date(),
+//       completed_at: null
+//     });
+//     // console.log("Ride created successfully:", rideCreate);
+//   } catch (error) {
+//     console.error("Error creating ride:", error);
+//   }
+
+//   return res.json({ msg: "ride created successfull", rideCreate })
+// }
+
+const { ValidationError, DatabaseError } = require("sequelize");
+const RATE_PER_KM = 30;
+
+// Haversine formula to calculate distance (in km)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const toRad = deg => (deg * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
 async function createRide(req, res) {
-  let { driver_id, vehicle_id, pickup_latitude, pickup_longitude, drop_latitude, drop_longitude, status } = req.body
-
-  const userToken = req.user
-
-  const debugToken = jwt.verify(userToken, process.env.JWT_SECRET)
-
-  const userId = debugToken.userid
-
-  let rideCreate;
-
+  const {
+    driver_id,
+    vehicle_id,
+    pickup_latitude,
+    pickup_longitude,
+    drop_latitude,
+    drop_longitude,
+    status
+  } = req.body;
+  
   try {
-    rideCreate = await Rides.create({
+    // Decode user ID from token
+    const userToken = req.user;
+    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+    const userId = decoded.userid;
+    
+    // Calculate distance and fare
+    const distance = calculateDistance(
+      parseFloat(pickup_latitude),
+      parseFloat(pickup_longitude),
+      parseFloat(drop_latitude),
+      parseFloat(drop_longitude)
+    );
+    
+    const fare = parseFloat((distance * RATE_PER_KM).toFixed(2));
+    
+    // Create ride with fare
+    const rideCreate = await Rides.create({
       user_id: userId,
-      driver_id: driver_id,
-      vehicle_id: vehicle_id,
-      pickup_latitude: pickup_latitude,
-      pickup_longitude: pickup_longitude,
-      drop_latitude: drop_latitude,
-      drop_longitude: drop_longitude,
-      status: status,
+      driver_id,
+      vehicle_id,
+      pickup_latitude,
+      pickup_longitude,
+      drop_latitude,
+      drop_longitude,
+      status,
+      fare_amount: fare,
       booked_at: new Date(),
       completed_at: null
     });
-    // console.log("Ride created successfully:", rideCreate);
+    
+    return res.json({ msg: "Ride created successfully", ride: rideCreate });
+
   } catch (error) {
+  
+    if (error instanceof ValidationError) {
+      const messages = error.errors.map(e => e.message);
+      return res.status(400).json({ msg: "Validation error", errors: messages });
+    }
+  
+    // Sequelize database (SQL/Postgres) error
+    if (error instanceof DatabaseError) {
+      // Return the original PG error message
+      return res.status(400).json({
+        msg: "Database error",
+        error: error.original?.message || "Unknown database error"
+      });
+    }
+
     console.error("Error creating ride:", error);
+    return res.status(500).json({ msg: "Internal server error" });
   }
-
-  return res.json({ msg: "ride created successfull", rideCreate })
 }
-
-
-
 
 async function findRide(req, res) {
   try {

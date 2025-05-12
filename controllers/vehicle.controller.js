@@ -99,9 +99,38 @@ async function findSingleVahicle(req,res){
   return res.json({msg:findvehicle})
   
 }
+
+async function deleteVehicle(req,res) {
+  
+  const vehicleId =  req.params.vehicleid
+
+  const reqDriver = req.driver
+
+  const driverToken = jwt.verify(reqDriver, process.env.JWT_SECRET)
+
+  const driverId = driverToken.driverid
+
+  let vehicle = await Vehicle.findOne({where:{id:vehicleId}})
+  // console.log(vehicle);
+
+  if(!vehicle){
+    return res.json({msg:"vehicle id not find"})
+  }
+  if (vehicle.driver_id !== driverId) {
+    return res.status(403).json({ msg: "Unauthorized: You cannot delete this vehicle" });
+  }
+  let deleteVehicle = await Vehicle.destroy({
+    where: { id: vehicleId }
+  });
+  
+
+  return res.json({msg:"vehicle delete successfull" , deleteVehicle})
+
+}
 module.exports = {
   addVehicle,
   updateVehicle,
   getDriverAllVehicles,
-  findSingleVahicle
+  findSingleVahicle,
+  deleteVehicle
 }

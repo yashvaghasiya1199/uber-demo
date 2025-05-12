@@ -1,4 +1,5 @@
 const Users = require('../models/user.model');
+const payments = require("../models/payment.model")
 const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
 const { findUserByEmailorUsername } = require("../services/user.services");
@@ -127,11 +128,17 @@ async function userProfileUpdate(req, res) {
     }
 }
 
-//  ride controller
+async function allPayment(req,res){
 
-async function addRide(req,res){
-
+    const userToken = req.cookies?.usertoken
+     
+    const tokenVerify = jwt.verify(userToken , process.env.JWT_SECRET)
     
+    const userId = tokenVerify.userid
+
+    const allPaymentofUser = await payments.findAll({ where: { user_id: userId } });
+
+    return res.json({allPaymentofUser})
 
 }
 
@@ -139,6 +146,5 @@ module.exports = {
     signUp,
     logIn,
     userProfileUpdate,
-    addRide,
-
+    allPayment
 };

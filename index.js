@@ -5,15 +5,16 @@ const app          = express()
 const fileUpload   = require("express-fileupload")
 const port = 8002
 require("dotenv").config()
-
+const db = require("./config/associate")
 
 
 // routes
-const usrRoute     = require("./routes/user.route")
+const userRoute     = require("./routes/user.route")
 const driverRoute  = require("./routes/driver.route")
 const vehicleRoute = require("./routes/vehicle.route")
 const rideRoute    = require("./routes/ride.route")
-const reviewRoute  = require("./routes/review")
+const reviewRoute  = require("./routes/review.route")
+const paymentRoute = require("./routes/payment.route")
 
 // middelwere 
 app.use(express.urlencoded({extended:true}))
@@ -42,7 +43,7 @@ const startServer = async () => {
   startServer();
 
   //  route
-  app.use("/api/user" ,usrRoute)
+  app.use("/api/user" ,userRoute)
 
   app.use("/api/driver" , driverRoute)
 
@@ -52,6 +53,7 @@ const startServer = async () => {
 
   app.use("/api/review" , userAuth , reviewRoute)
   
+  app.use("/api/payment" , paymentRoute)
 
 
 app.listen(port,()=>console.log(`run on ${port}`))
