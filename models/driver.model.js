@@ -38,6 +38,11 @@ const Driver = sequelize.define('Driver', {
     allowNull: true,
     defaultValue: 'https://res.cloudinary.com/dkfhw2v5x/image/upload/v1746678762/default-profile_en2vne.jpg'
   },
+  otp:{
+    type: DataTypes.INTEGER,
+    defaultValue: null,
+    allowNull:true
+ },
   phone: {
     type: DataTypes.STRING(20),
     allowNull: true,
@@ -57,20 +62,20 @@ Vehicle.belongsTo(Driver, { foreignKey: 'driver_id' });
 //  for driver's all information
 Driver.hasOne(require('./driverdocument.model'), { 
   foreignKey: 'driver_id', 
-  as: 'driverdocument'  // Make sure this alias matches in the query below
+  as: 'driverdocument' 
 });
 
 Driver.hasMany(require('./vehicle.model'), { 
   foreignKey: 'driver_id', 
-  as: 'vehicles' // Make sure this alias matches in the query below
+  as: 'vehicles' 
 });
 DriverDocument.belongsTo(Driver, { 
   foreignKey: 'driver_id', 
-  as: 'driver' // This can be optional if you don't need to use it in queries
+  as: 'driver' 
 });
 Vehicle.belongsTo(Driver, { 
   foreignKey: 'driver_id', 
-  as: 'driver' // This can be optional if you don't need to use it in queries
+  as: 'driver' 
 });
 
 

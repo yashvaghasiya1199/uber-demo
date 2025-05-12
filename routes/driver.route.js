@@ -14,11 +14,11 @@ route.put("/updateprofileimage" , driverAuth ,  driverupdateProfileImage)
 
 route.post("/addlocation" , driverAuth , driverLocations )
 
-route.post("/adddocument" , driverDocument )
+route.post("/adddocument" , driverAuth,driverDocument )
 
-route.put("/updatedocument" , updateDriverDocument)
+route.put("/updatedocument" ,driverAuth , updateDriverDocument)
 
-route.get("/driverinfo/:driverId" , driverAllInformation )
+route.get("/driverinfo/:driverId" ,driverAuth, driverAllInformation )
 
 //  all location of one driver
 route.get("/alllocation" ,driverAuth ,getDriverAllLocation )

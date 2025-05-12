@@ -32,7 +32,12 @@ async function driverSignup(req, res) {
 
     const file = req.files.profileimage
     console.log(file);
+ 
+    const FindUserName = await drivers.findOne({where :{username:username}})
 
+    if(FindUserName){
+        return res.json({msg:"username already exists"})
+    }
 
     // if file > 1 mb then user can't upload image
 
@@ -53,6 +58,10 @@ async function driverSignup(req, res) {
 
     } catch (err) {
         console.error("Cloudinary Upload Error:", err);
+        if (err.name === "SequelizeUniqueConstraintError") {
+            return res.status(400).json({ msg: "Username or email already exists." });
+          }
+          consol
         return res.status(500).json({ msg: "Image upload failed." });
     }
 
@@ -270,7 +279,8 @@ async function getDriverAllLocation(req, res) {
 //  driver's document uploads
 async function driverDocument(req, res) {
 
-    const drivertoken = req.cookies?.drivertoken
+    const drivertoken = req.driver
+    
 
     const tokenVerify = jwt.verify(drivertoken, process.env.JWT_SECRET)
 
@@ -278,8 +288,10 @@ async function driverDocument(req, res) {
 
     const driver = await driverDocumetModel.findOne({ where: { driver_id: driverId } })
  
-    console.log(driver);
-    
+    if(!driver){
+        return res.json({msg:"drivernot found"})
+    }
+
     // file uploads
     const pancardfile = req.files.pancard
     const uploadAadharFront = req.files.aadharfront
@@ -301,29 +313,22 @@ async function driverDocument(req, res) {
             console.log(error.message);
         }
     }
+console.log("d" ,driverId);
 
     // for aadharfront and back
-    let aadharFront;
-    let aadharback;
-    if (uploadAadharFront && uploadAadharBack) {
-        // for front image
-        aadharFront = await cloudinary.uploader.upload(uploadAadharFront.tempFilePath)
+    // let aadharFront;
+    // let aadharback;
+    // if (uploadAadharFront && uploadAadharBack) {
+    //     // for front image
+    //     aadharFront = await cloudinary.uploader.upload(uploadAadharFront.tempFilePath)
 
-        // for back image
-        aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
-        // console.log("aadhar back" ,aadharback);
+    //     // for back image
+    //     aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
+    //     // console.log("aadhar back" ,aadharback);
 
-    } else {
-        return res.json({ msg: "both side image upload" })
-    }
-
-   
-
-
- 
-    if (publicId) {
-        await cloudinary.destroy(publicId)
-    }
+    // } else {
+    //     return res.json({ msg: "both side image upload" })
+    // }
 
     const create = await driverDocumetModel.create({
         driver_id: driverId,
@@ -368,7 +373,10 @@ async function updateDriverDocument(req, res) {
                 const parts = url.split("/")
                 const fileWithExt = parts[parts.length - 1]
                 const publicId = fileWithExt.split('.')[0]
-            }
+                    if(publicId){
+                        await cloudinary.destroy(publicId)
+                    }
+                }
             
 
         } catch (error) {
@@ -387,7 +395,8 @@ async function updateDriverDocument(req, res) {
         aadharback = await cloudinary.uploader.upload(uploadAadharBack.tempFilePath)
         // console.log("aadhar back" ,aadharback);
 
-    } else {
+     }
+     else {
         return res.json({ msg: "both side image upload" })
     }
 
@@ -405,7 +414,7 @@ async function updateDriverDocument(req, res) {
     })
     console.log("pid:", updateDriverDoc);
 
-    return res.json({ msg: "driver profile update successfully", updateDriverDoc })
+    return res.json({ msg: "driver profile update successfully",updateDriverDoc })
 }
 
 async function driverAllInformation(req,res) {
@@ -422,7 +431,7 @@ async function driverAllInformation(req,res) {
             },
             {
               model: Vehicle,
-              as: 'vehicles', // match the alias from your associations
+              as: 'vehicles', 
             },
           ],
         });

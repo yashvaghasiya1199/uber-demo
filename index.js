@@ -3,18 +3,19 @@ const sequelize    = require("./config/db");
 const cookieparser = require("cookie-parser")
 const app          = express()
 const fileUpload   = require("express-fileupload")
-const port = 8002
+const port = 8003
 require("dotenv").config()
 const db = require("./config/associate")
 
 
 // routes
-const userRoute     = require("./routes/user.route")
+const userRoute    = require("./routes/user.route")
 const driverRoute  = require("./routes/driver.route")
 const vehicleRoute = require("./routes/vehicle.route")
 const rideRoute    = require("./routes/ride.route")
 const reviewRoute  = require("./routes/review.route")
 const paymentRoute = require("./routes/payment.route")
+const forgotPasswrd= require("./routes/forgotpassword.route")
 
 // middelwere 
 app.use(express.urlencoded({extended:true}))
@@ -54,6 +55,8 @@ const startServer = async () => {
   app.use("/api/review" , userAuth , reviewRoute)
   
   app.use("/api/payment" , paymentRoute)
+
+  app.use("/api/forgot" ,forgotPasswrd)
 
 
 app.listen(port,()=>console.log(`run on ${port}`))

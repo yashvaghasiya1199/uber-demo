@@ -2,7 +2,7 @@
      const { DataTypes } = require('sequelize');
      const sequelize = require('../config/db');
      
-     const Users = sequelize.define('User', {
+     const Users = sequelize.define('users', {
        id: {
          type: DataTypes.UUID,
          defaultValue: DataTypes.UUIDV4, // Generates UUID automatically
@@ -34,6 +34,11 @@
        phone: {
          type: DataTypes.STRING(20),
          allowNull: true,
+       },
+       otp:{
+          type: DataTypes.INTEGER,
+          defaultValue: null,
+          allowNull:true
        },
        deleted_at: {
          type: DataTypes.DATE,
