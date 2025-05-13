@@ -15,7 +15,7 @@ const vehicleRoute = require("./routes/vehicle.route")
 const rideRoute    = require("./routes/ride.route")
 const reviewRoute  = require("./routes/review.route")
 const paymentRoute = require("./routes/payment.route")
-const forgotPasswrd= require("./routes/forgotpassword.route")
+const authRoute    = require("./routes/auth.route")
 
 // middelwere 
 app.use(express.urlencoded({extended:true}))
@@ -44,9 +44,11 @@ const startServer = async () => {
   startServer();
 
   //  route
-  app.use("/api/user" ,userRoute)
+  app.use("/api/auth" , authRoute)
 
-  app.use("/api/driver" , driverRoute)
+  app.use("/api/user" ,userAuth,userRoute)
+
+  app.use("/api/driver" ,driverAuth, driverRoute)
 
   app.use("/api/vehicle" , driverAuth , vehicleRoute )
 
@@ -56,7 +58,6 @@ const startServer = async () => {
   
   app.use("/api/payment" , paymentRoute)
 
-  app.use("/api/forgot" ,forgotPasswrd)
 
 
 app.listen(port,()=>console.log(`run on ${port}`))

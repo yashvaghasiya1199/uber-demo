@@ -2,6 +2,7 @@ const vehicals = require("../models/vehicle.model")
 const jwt = require("jsonwebtoken")
 const Driver = require("../models/driver.model")
 const Vehicle = require("../models/vehicle.model")
+const { driverIdFromRequest } = require("../services/driver.services")
 
 async function addVehicle(req, res) {
 
@@ -15,12 +16,7 @@ async function addVehicle(req, res) {
     return res.json({ msg: "vehicle must be car or bike" });
   }
 
-  const reqDriver = req.driver
-
-  const driverToken = jwt.verify(reqDriver, process.env.JWT_SECRET)
-
-  const driverId = driverToken.driverid
-
+  const driverId = driverIdFromRequest(req,res)
 
   const create = await vehicals.create({
     type,
@@ -60,11 +56,7 @@ async function updateVehicle(req, res) {
 
 async function getDriverAllVehicles(req,res) {
 
-  const reqDriver = req.driver
-
-  const driverToken = jwt.verify(reqDriver, process.env.JWT_SECRET)
-
-  const driverId = driverToken.driverid
+  const driverId = driverIdFromRequest(req,res)
   
   try {
     const driver = await Driver.findOne({
@@ -104,12 +96,8 @@ async function deleteVehicle(req,res) {
   
   const vehicleId =  req.params.vehicleid
 
-  const reqDriver = req.driver
-
-  const driverToken = jwt.verify(reqDriver, process.env.JWT_SECRET)
-
-  const driverId = driverToken.driverid
-
+  const driverId = driverIdFromRequest(req,res)
+  
   let vehicle = await Vehicle.findOne({where:{id:vehicleId}})
   // console.log(vehicle);
 

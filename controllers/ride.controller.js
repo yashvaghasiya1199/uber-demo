@@ -1,64 +1,19 @@
 const jwt = require("jsonwebtoken")
-const { TIME, DataTypes } = require("sequelize")
+const {  DataTypes } = require("sequelize")
 const { Op, literal } = require("sequelize");
 const Rides = require("../models/ride.model")
 const Driver = require("../models/driver.model");
 const Vehicle = require("../models/vehicle.model");
 const User = require("../models/user.model");
 const driverLocation = require("../models/driverlocation.model")
-
-
-// async function createRide(req, res) {
-//   let { driver_id, vehicle_id, pickup_latitude, pickup_longitude, drop_latitude, drop_longitude, status } = req.body
-
-//   const userToken = req.user
-
-//   const debugToken = jwt.verify(userToken, process.env.JWT_SECRET)
-
-//   const userId = debugToken.userid
-
-//   let rideCreate;
-
-//   try {
-//     rideCreate = await Rides.create({
-//       user_id: userId,
-//       driver_id: driver_id,
-//       vehicle_id: vehicle_id,
-//       pickup_latitude: pickup_latitude,
-//       pickup_longitude: pickup_longitude,
-//       drop_latitude: drop_latitude,
-//       drop_longitude: drop_longitude,
-//       status: status,
-//       booked_at: new Date(),
-//       completed_at: null
-//     });
-//     // console.log("Ride created successfully:", rideCreate);
-//   } catch (error) {
-//     console.error("Error creating ride:", error);
-//   }
-
-//   return res.json({ msg: "ride created successfull", rideCreate })
-// }
-
 const { ValidationError, DatabaseError } = require("sequelize");
+const { userIdFromRequest } = require("../services/user.services");
+const { calculateDistance } = require("../services/ride.service");
+
 const RATE_PER_KM = 30;
 
 // Haversine formula to calculate distance (in km)
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
-  const toRad = deg => (deg * Math.PI) / 180;
 
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
-}
 
 async function createRide(req, res) {
   const {
@@ -70,13 +25,12 @@ async function createRide(req, res) {
     drop_longitude,
     status
   } = req.body;
-  
+
   try {
     // Decode user ID from token
-    const userToken = req.user;
-    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const userId = decoded.userid;
-    
+
+    const userId = userIdFromRequest(req, res)
+
     // Calculate distance and fare
     const distance = calculateDistance(
       parseFloat(pickup_latitude),
@@ -84,9 +38,9 @@ async function createRide(req, res) {
       parseFloat(drop_latitude),
       parseFloat(drop_longitude)
     );
-    
+
     const fare = parseFloat((distance * RATE_PER_KM).toFixed(2));
-    
+
     // Create ride with fare
     const rideCreate = await Rides.create({
       user_id: userId,
@@ -101,16 +55,16 @@ async function createRide(req, res) {
       booked_at: new Date(),
       completed_at: null
     });
-    
+
     return res.json({ msg: "Ride created successfully", ride: rideCreate });
 
   } catch (error) {
-  
+
     if (error instanceof ValidationError) {
       const messages = error.errors.map(e => e.message);
       return res.status(400).json({ msg: "Validation error", errors: messages });
     }
-  
+
     // Sequelize database (SQL/Postgres) error
     if (error instanceof DatabaseError) {
       // Return the original PG error message
@@ -132,6 +86,7 @@ async function findRide(req, res) {
     if (!latitude || !longitude) {
       return res.status(400).json({ msg: "Latitude and longitude are required" });
     }
+    
 
     const userLat = parseFloat(latitude);
     const userLng = parseFloat(longitude);
@@ -167,7 +122,6 @@ async function findRide(req, res) {
               required: false
             }
           ],
-          where: { deleted_at: null }
         }
       ]
     });
@@ -195,7 +149,7 @@ Rides.belongsTo(Driver, { foreignKey: 'driver_id' });
 
 Rides.belongsTo(Vehicle, { foreignKey: 'vehicle_id' });
 
-const userallRide = async (req, res) => {
+ async function userallRide (req, res){
   try {
     const userToken = req.user
 
@@ -236,22 +190,22 @@ const userallRide = async (req, res) => {
   }
 };
 
-async function deleteRide(req,res){
+async function deleteRide(req, res) {
 
   const rideid = req.params.rideid
 
-  if(!rideid){
-    return res.json({msg:"please provide rideid"})
+  if (!rideid) {
+    return res.json({ msg: "please provide rideid" })
   }
 
-  const findRideId = await Rides.findOne({where:{ride_id:rideid}})
+  const findRideId = await Rides.findOne({ where: { ride_id: rideid } })
 
-  if(!findRideId){
-    return res.json({msg:"ride id not found"})
+  if (!findRideId) {
+    return res.json({ msg: "ride id not found" })
   }
-   await findRideId.destroy()  
+  await findRideId.destroy()
 
-   return res.json({msg:"ride is deleted"})
+  return res.json({ msg: "ride is deleted" })
 
 }
 
@@ -261,5 +215,5 @@ module.exports = {
   createRide,
   findRide,
   userallRide,
-  deleteRide 
+  deleteRide
 }

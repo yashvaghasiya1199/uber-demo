@@ -4,6 +4,7 @@ const { DatabaseError } = require("sequelize");
 
 async function payPayment(req, res) {
   const rideId = req.params.rideid;
+  
   const { method } = req.body;
 
   try {

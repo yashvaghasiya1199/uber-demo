@@ -1,12 +1,8 @@
 const express = require("express")
-const { signUp, logIn, userProfileUpdate, allPayment } = require("../controllers/user.controller")
+const {   allPayment, userProfileUpdate } = require("../controllers/user.controller")
 const route = express.Router()
 
-route.post("/signup", signUp)
-
-route.post("/login" , logIn)
-
-route.put("/updateprofile" , userProfileUpdate)
+route.put("/profile" , userProfileUpdate)
 
 route.get("/allpayment" ,allPayment )
 

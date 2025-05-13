@@ -8,7 +8,7 @@ const driverlocation = sequelize.define('driverlocation', {
         primaryKey: true,
         allowNull: false,
     },
-    driverid: {
+    driver_id: {
         type: DataTypes.UUID,
         allowNull:false,
         references: {

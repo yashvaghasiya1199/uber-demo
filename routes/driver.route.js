@@ -1,27 +1,22 @@
 const express = require("express")
-const { driverSignup, driverLogin, driverProfilUpdate, driverLocations, getDriverAllLocation, driverupdateProfileImage, driverDocument, updateDriverDocument, driverAllInformation, AllDriverReviews } = require("../controllers/driver.controller")
+const {    driverLocations, getDriverAllLocation, driverDocument, updateDriverDocument, driverAllInformation, AllDriverReviews, driverProfilUpdate, driverUpdateProfileImage } = require("../controllers/driver.controller")
 const { driverAuth } = require("../middelweres/driverauth")
 const route = express.Router()
 
+route.put("/profile" ,driverProfilUpdate)
 
-route.post("/signup" , driverSignup)
+route.put("/profile-image" , driverUpdateProfileImage)
 
-route.post("/login" , driverLogin)
+route.post("/addlocation"  , driverLocations )
 
-route.put("/profileupdate" , driverAuth , driverProfilUpdate)
+route.post("/adddocument" ,driverDocument )
 
-route.put("/updateprofileimage" , driverAuth ,  driverupdateProfileImage)
+route.put("/updatedocument"  , updateDriverDocument)
 
-route.post("/addlocation" , driverAuth , driverLocations )
-
-route.post("/adddocument" , driverAuth,driverDocument )
-
-route.put("/updatedocument" ,driverAuth , updateDriverDocument)
-
-route.get("/driverinfo/:driverId" ,driverAuth, driverAllInformation )
+route.get("/driverinfo/:driverId" , driverAllInformation )
 
 //  all location of one driver
-route.get("/alllocation" ,driverAuth ,getDriverAllLocation )
+route.get("/alllocation"  ,getDriverAllLocation )
 
 route.get("/allreview" , AllDriverReviews)
 

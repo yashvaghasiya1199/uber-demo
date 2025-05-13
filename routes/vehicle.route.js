@@ -10,7 +10,7 @@ route.put("/updatevehicle/:vehicleid" , updateVehicle )
 route.delete("/delete/:vehicleid" , deleteVehicle)
 
 //  all vehicle of driver
-route.get("/alldata" , driverAuth , getDriverAllVehicles)
+route.get("/alldata" , getDriverAllVehicles)
 
 route.get("/singlevahicle/:vehicleid" , findSingleVahicle )
 

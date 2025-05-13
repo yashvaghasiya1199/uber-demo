@@ -1,15 +1,13 @@
 const jwt = require("jsonwebtoken")
 const Review = require("../models/review.model");
 const Ride = require("../models/ride.model");
-const validator = require("validator")
+const validator = require("validator");
+const { userIdFromRequest } = require("../services/user.services");
  
 async function postReview (req, res)  {
   try {
-    const userToken = req.user
 
-    const tokenVerify  = jwt.verify(userToken,process.env.JWT_SECRET)
-
-    const userId = tokenVerify.userid; 
+    const userId = userIdFromRequest(req,res); 
 
     const { ride_id, rating } = req.body;
 
@@ -63,11 +61,7 @@ async function deleteReview(req,res){
 
   const reviewId = req.params.reviewid
 
-  const userToken = req.user
-
-  const tokenVerify  = jwt.verify(userToken,process.env.JWT_SECRET)
-
-  const userId = tokenVerify.userid; 
+  const userId = userIdFromRequest(req,res); 
 
 
   if(!reviewId){

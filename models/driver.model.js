@@ -80,6 +80,7 @@ Vehicle.belongsTo(Driver, {
 
 
 
-
+Driver.hasMany(DriverLocation, { foreignKey: 'driver_id' });
+DriverLocation.belongsTo(Driver, { foreignKey: 'driver_id' });
 
 module.exports = Driver;
