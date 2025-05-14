@@ -204,7 +204,7 @@ async function driverSignup(req, res) {
         first_name,
         last_name,
         email,
-        password: hashedPassword, // Save the hashed password
+        password: hashedPassword, 
         phone,
         username,
         deleted_at: null,

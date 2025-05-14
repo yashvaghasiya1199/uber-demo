@@ -16,12 +16,11 @@ async function payPayment(req, res) {
       return res.status(404).json({ msg: "Ride not found" ,error:true});
     }
 
-    // Only allow the user who booked the ride to pay
+    // only booked user can payment
     if (ride.user_id !== userId) {
       return res.status(403).json({ msg: "You are not authorized to make this payment" ,error:true});
     }
 
-    // Check if a non-cancelled payment already exists
     const existingPayment = await payments.findOne({
       where: {
         ride_id: rideId,
@@ -36,14 +35,13 @@ async function payPayment(req, res) {
 
     const { user_id, driver_id, fare_amount } = ride.dataValues;
 
-    // Allow the user to create a new payment if previous payment is cancelled
     const create = await payments.create({
       ride_id: rideId,
       user_id: user_id,
       driver_id: driver_id,
       fare_amount: fare_amount,
       method: method,
-      transaction_id: null, // This can be populated when payment is processed, e.g., with a transaction ID from a payment gateway
+      transaction_id: null, 
     });
 
     return res.status(200).json({ msg: "Payment successful", payment: create ,error:false});

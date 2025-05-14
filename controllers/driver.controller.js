@@ -215,11 +215,9 @@ async function driverAllInformation(req, res) {
             include: [
                 {
                     model: driverDocumetModel,
-                    as: 'driverdocument',
                 },
                 {
                     model: Vehicle,
-                    as: 'vehicles',
                 },
             ],
         });

@@ -4,7 +4,7 @@ const driverDocumetModel = require("../models/driverdocument.model")
 const jwt = require("jsonwebtoken")
 const cloudinary = require("cloudinary").v2
 
-// for uploaddin profile image setup
+// for uploading profile image setup
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,

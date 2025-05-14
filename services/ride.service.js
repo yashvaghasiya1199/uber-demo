@@ -1,7 +1,7 @@
 const {literal} = require("sequelize")
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const toRad = deg => (deg * Math.PI) / 180;
   
     const dLat = toRad(lat2 - lat1);
@@ -13,7 +13,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
   
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+    return R * c; 
   }
 
 
