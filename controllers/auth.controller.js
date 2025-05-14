@@ -1,15 +1,14 @@
 const Users = require('../models/user.model');
 const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
+const drivers = require("../models/driver.model")
+const review = require("../models/review.model");
+const nodemailer = require("nodemailer");
+const cloudinary = require("cloudinary").v2
 const { findUserByEmailorUsername } = require("../services/user.services");
 const { jwtTokenCreate } = require('../utills/jwtToken.utill');
-const drivers = require("../models/driver.model")
-const nodemailer = require("nodemailer");
-
 const { findDriverUsernameandEmail } = require("../services/driver.services");
-const review = require("../models/review.model");
 const { emailService } = require('../services/email.service');
-const cloudinary = require("cloudinary").v2
 
 
 // USER AUTH
@@ -22,13 +21,13 @@ async function signUp(req, res) {
 
         // Validate input
         if (!first_name || !last_name || !email || !password || !phone || !username) {
-            return res.status(400).json({ msg: "All required fields must be provided." });
+            return res.status(400).json({ msg: "All required fields must be provided." ,error:true });
         }
 
         const existingUser = await findUserByEmailorUsername(email);
 
         if (existingUser) {
-            return res.status(409).json({ msg: "User already exists. Please change email or username." });
+            return res.status(409).json({ msg: "User already exists. Please change email or username." ,error:true});
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -47,12 +46,13 @@ async function signUp(req, res) {
 
         return res.status(201).json({
             msg: "User signed up successfully.",
-            user: newUser // Send the user data without the password
+            user: newUser ,
+            error:false
         });
 
     } catch (error) {
         console.error("Signup error:", error);
-        return res.status(500).json({ msg: "Server error", error: error.message });
+        return res.status(500).json({ msg: "Server error", error: error.message,error:true });
     }
 }
 
@@ -64,16 +64,16 @@ async function logIn(req, res) {
         const user = await findUserByEmailorUsername(emailorusername);
 
         if (!user) {
-            return res.json({ err: "Invalid email or username" });
+            return res.json({ err: "Invalid email or username" ,error:true });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return res.json({ msg: "Invalid password" });
+            return res.json({ msg: "Invalid password" ,error:true});
         }
 
-        const payload = { userid: user.id };
+        const payload = { userid: user.user_id };
 
         // Generate token 
         const token = jwtTokenCreate(payload);
@@ -81,11 +81,11 @@ async function logIn(req, res) {
         //cookie set
         res.cookie("usertoken", token);
 
-        return res.json({ msg: "Login successful", token, user });
+        return res.json({ msg: "Login successful",error:false, user });
 
     } catch (error) {
         console.log(error.message);
-        return res.status(500).json({ msg: "Server error", error: error.message });
+        return res.status(500).json({ msg: "Server error", error: error.message ,error:true});
     }
 }
 
@@ -98,12 +98,12 @@ async function sendOtp(req, res) {
 
     const { email, duplicate } = req.body
     if (!email) {
-        return res.json({ msg: "please enter email" })
+        return res.json({ msg: "please enter email" ,error:true})
     }
 
     const findUser = await Users.findOne({ where: { email: duplicate } })
     if (!findUser) {
-        return res.json({ msg: "please enter valid email" })
+        return res.json({ msg: "please enter valid email",error:true})
     }
 
     let updated = await Users.update(
@@ -117,7 +117,7 @@ async function sendOtp(req, res) {
     const sendOtp =  emailService(email,otp)
     
 
-    return res.json({ msg: "done" })
+    return res.json({ msg: "done" ,error:false})
 }
 
 //   update password 
@@ -127,14 +127,14 @@ async function changePassword(req, res) {
     const otpFind = await Users.findOne({ where: { otp: otp } })
 
     if (!otpFind) {
-        return res.json({ msg: "invalid otp" })
+        return res.json({ msg: "invalid otp" ,error:true})
     }
     const hasPsssword = await bcrypt.hash(newpassword, 10)
     const update = await Users.update(
         { password: hasPsssword },
         { where: { otp: otp } }
     )
-    return res.json({ msg: "password update successfully", update })
+    return res.json({ msg: "password update successfully", update ,error:false})
 }
 
 
@@ -155,7 +155,7 @@ async function driverSignup(req, res) {
     const { first_name, last_name, email, username, password, phone, } = req.body;
 
     if (!first_name || !last_name || !email || !password || !phone || !username) {
-        return res.status(400).json({ msg: "All required fields must be provided." });
+        return res.status(400).json({ msg: "All required fields must be provided." ,error:true});
     }
 
     const file = req.files.profileimage
@@ -164,7 +164,7 @@ async function driverSignup(req, res) {
     const FindUserName = await drivers.findOne({ where: { username: username } })
 
     if (FindUserName) {
-        return res.json({ msg: "username already exists" })
+        return res.json({ msg: "username already exists" ,error:true})
     }
 
     // if file > 1 mb then user can't upload image
@@ -172,11 +172,11 @@ async function driverSignup(req, res) {
     const maxSize = 1 * 1024 * 1024;
 
     if (file.size > maxSize) {
-        return res.status(400).send("Your image is too large. Max allowed size is 1MB.");
+        return res.status(400).json({msg:"Your image is too large. Max allowed size is 1MB.",error:true});
     }
 
     if (!req.files || !req.files.profileimage) {
-        return res.status(400).json({ msg: "Profile image is required." });
+        return res.status(400).json({ msg: "Profile image is required." ,error:true});
     }
 
     let uploadResult;
@@ -187,15 +187,15 @@ async function driverSignup(req, res) {
     } catch (err) {
         console.error("Cloudinary Upload Error:", err);
         if (err.name === "SequelizeUniqueConstraintError") {
-            return res.status(400).json({ msg: "Username or email already exists." });
+            return res.status(400).json({ msg: "Username or email already exists.",error:true });
         }
         consol
-        return res.status(500).json({ msg: "Image upload failed." });
+        return res.status(500).json({ msg: "Image upload failed.",error:true });
     }
 
     const existingDriver = await findDriverUsernameandEmail(email);
     if (existingDriver) {
-        return res.json({ msg: "Email or username already exists." });
+        return res.json({ msg: "Email or username already exists.",error:true });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10); // 10 salt rounds
@@ -211,26 +211,26 @@ async function driverSignup(req, res) {
         profile_image: uploadResult.url,
     });
 
-    return res.json({ msg: "Driver signup success", create });
+    return res.json({ msg: "Driver signup success", create ,error:false});
 }
 
 
 async function driverLogin(req, res) {
     const { emailorusername, password } = req.body;
     if (!emailorusername || !password) {
-        return res.json({ msg: "Please enter both fields" });
+        return res.json({ msg: "Please enter both fields",error:true});
     }
 
     let driver = await findDriverUsernameandEmail(emailorusername);
 
     if (!driver) {
-        return res.json({ msg: "Invalid username or password" });
+        return res.json({ msg: "Invalid username or password" ,error:true});
     }
 
     const isMatch = await bcrypt.compare(password, driver.password);
 
     if (!isMatch) {
-        return res.json({ msg: "Invalid password" });
+        return res.json({ msg: "Invalid password" ,error:true});
     }
 
     const payload = { driverid: driver.id };
@@ -239,7 +239,7 @@ async function driverLogin(req, res) {
 
     res.cookie("drivertoken", jwtCreate);
 
-    return res.json({ msg: "Driver login success", driver });
+    return res.json({ msg: "Driver login success", driver ,error:false});
 
 }
 
@@ -250,12 +250,12 @@ async function driverSendOtp(req,res){
   
       const {email,duplicate} = req.body
       if(!email){
-        return res.json({msg:"please enter email"})
+        return res.json({msg:"please enter email",error:true})
       }
   
       const findUser = await drivers.findOne({where:{email:duplicate}})
       if(!findUser){
-        return res.json({msg:"please enter valid email"})
+        return res.json({msg:"please enter valid email",error:true})
       }
   
       let updated = await drivers.update(
@@ -269,7 +269,7 @@ async function driverSendOtp(req,res){
   
     const sendOtp = emailService(email,otp)
     
-      return res.json({msg:"done"})
+      return res.json({msg:"otp has been send",error:false})
   }
 
   async function driverChangePassword(req,res){
@@ -278,14 +278,14 @@ async function driverSendOtp(req,res){
     const otpFind = await drivers.findOne({where:{otp:otp}})
 
     if(!otpFind){
-        return res.json({msg:"invalid otp"})
+        return res.json({msg:"invalid otp",error:true})
     }
     const hasPsssword = await bcrypt.hash(newpassword,10)
     const update = await drivers.update(
         { password: hasPsssword }, 
         { where: { otp: otp } } 
     )
-  return res.json({msg:"password update successfully" , update})
+  return res.json({msg:"password update successfully" , update,error:false})
   }
 
 

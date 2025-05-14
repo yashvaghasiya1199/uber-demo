@@ -1,3 +1,5 @@
+const {literal} = require("sequelize")
+
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Earth's radius in km
     const toRad = deg => (deg * Math.PI) / 180;
@@ -14,6 +16,21 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in km
   }
 
+
+  function distanceCondition(userLat, userLng, radiusKm = 10) {
+    return literal(`
+      6371 * acos(
+        cos(radians(${userLat})) *
+        cos(radians("driverlocation"."latitude")) *
+        cos(radians("driverlocation"."longitude") - radians(${userLng})) +
+        sin(radians(${userLat})) *
+        sin(radians("driverlocation"."latitude"))
+      ) < ${radiusKm}
+    `);
+  }
+  
+
   module.exports = {
-    calculateDistance
+    calculateDistance,
+    distanceCondition
   }

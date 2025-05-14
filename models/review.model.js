@@ -1,9 +1,10 @@
 
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
+const Ride = require("../models/ride.model")
 
 const review = sequelize.define("reviews", {
-  id: {
+  review_id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
@@ -41,5 +42,7 @@ const review = sequelize.define("reviews", {
   tableName: "reviews",
   timestamps: true
 });
+
+
 
 module.exports = review;

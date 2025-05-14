@@ -14,19 +14,19 @@ async function postReview (req, res)  {
     const uuidValidation = validator.isUUID(ride_id)
 
     if(!uuidValidation){
-      return res.json({msg:"invalid uuid enter"})
+      return res.json({msg:"invalid uuid enter",error:true})
     }
 
     const ride = await Ride.findOne({ where: { ride_id:ride_id } });
     
 
     if (!ride) {
-      return res.status(404).json({ message: "Ride not found" });
+      return res.status(404).json({ message: "Ride not found",error:true });
     }
 
     //  checking only ridebook user can give review (other user cannot reviews)
     if (ride.user_id !== userId) {
-      return res.status(403).json({ message: "You are not allowed to review this ride" });
+      return res.status(403).json({ message: "You are not allowed to review this ride",error:true });
     }
 
     // user can comment only one time
@@ -38,7 +38,7 @@ async function postReview (req, res)  {
     });
 
     if (existingReview) {
-      return res.status(400).json({ message: "You have already reviewed this ride" });
+      return res.status(400).json({ message: "You have already reviewed this ride",error:true });
     }
 
     // Create the review
@@ -49,11 +49,11 @@ async function postReview (req, res)  {
       rating
     });
 
-    res.status(201).json(review);
+    res.status(201).json({review,error:false});
 
   } catch (error) {
     console.error("Error creating review:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error",error:true});
   }
 };
 
@@ -65,24 +65,24 @@ async function deleteReview(req,res){
 
 
   if(!reviewId){
-    return res.json({msg:"please provide review id"})
+    return res.json({msg:"please provide review id",error:true})
   }
 
   const findReview = await Review.findOne({where:{id:reviewId}})
 
   // only that user delete review who create
   if (findReview.user_id !== userId) {
-    return res.status(403).json({ message: "You are not allowed to review this ride" });
+    return res.status(403).json({ message: "You are not allowed to review this ride" ,error:true});
   }
 
 
   if(!findReview){
-    return res.josn({msg:"review can't find"})
+    return res.josn({msg:"review can't find",error:true})
   }
 
   await findReview.destroy()
 
-  return res.json({msg:"review delete success"})
+  return res.json({msg:"review delete success",error:false})
 }
 
 module.exports = {

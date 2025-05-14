@@ -14,15 +14,15 @@ async function userProfileUpdate(req, res) {
         const { first_name, last_name, email, phone } = req.body;
 
         if (!first_name && !last_name && !email && !phone) {
-            return res.status(400).json({ msg: "No fields to update. Please provide at least one field to update." });
+            return res.status(400).json({ msg: "No fields to update. Please provide at least one field to update." ,error:true});
         }
 
         const user = await Users.findOne({ where: { id: userId } });
         if (!user) {
-            return res.status(404).json({ msg: "User not found." });
+            return res.status(404).json({ msg: "User not found." ,error:true});
         }
         if (user.email === email) {
-            return res.json({ msg: "privious email id found must enter new email id" })
+            return res.json({ msg: "privious email id found must enter new email id" ,error:true})
         }
 
         const updatedUser = await user.update({
@@ -43,7 +43,7 @@ async function userProfileUpdate(req, res) {
                 phone: updatedUser.phone,
                 username: updatedUser.username,
                 updated_at: updatedUser.updated_at,
-            }
+            },error:false
         });
     } catch (error) {
         console.error("User profile update error:", error);
@@ -53,13 +53,12 @@ async function userProfileUpdate(req, res) {
 
 
 async function allPayment(req,res){
-
   
     const userId = userIdFromRequest(req,res)
 
     const allPaymentofUser = await payments.findAll({ where: { user_id: userId } });
 
-    return res.json({allPaymentofUser})
+    return res.json({allPaymentofUser,error:false})
 
 }
 

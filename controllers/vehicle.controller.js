@@ -9,11 +9,11 @@ async function addVehicle(req, res) {
   const { type, model, registration_number, color } = req.body
 
   if (!type || !model || !registration_number) {
-    return res.json("all fild must require")
+    return res.json({msg:"all fild must require" ,error:true})
   }
 
   if (type !== 'car' && type !== 'bike') {
-    return res.json({ msg: "vehicle must be car or bike" });
+    return res.json({ msg: "vehicle must be car or bike" ,error:true});
   }
 
   const driverId = driverIdFromRequest(req,res)
@@ -27,7 +27,7 @@ async function addVehicle(req, res) {
   })
 
 
-  return res.json({ msg: "add vehical", create })
+  return res.json({ msg: "add vehical", create ,error:false})
   
 }
 
@@ -40,7 +40,7 @@ async function updateVehicle(req, res) {
   let findVehical = await vehicals.findOne({ where: { id: vehicleId } })
 
   if (!findVehical) {
-    return res.json({ msg: "vehical not found" })
+    return res.json({ msg: "vehical not found" ,error:true})
   }
 
   const updateVehicles = await findVehical.update({
@@ -50,7 +50,7 @@ async function updateVehicle(req, res) {
     color: color || findVehical.color
   })
 
-  return res.json({ updateVehicles })
+  return res.json({ updateVehicles,error:false })
 
 }
 
@@ -68,13 +68,13 @@ async function getDriverAllVehicles(req,res) {
     });
 
     if (!driver) {
-      return { message: 'Driver not found' };
+      return { message: 'Driver not found' ,error:true};
     }
 
-    return res.json({driver});  
+    return res.json({driver,error:false});  
   } catch (error) {
     console.error(error);
-    return { message: 'Error fetching data' };
+    return { message: 'Error fetching data' ,error:true};
   }
 }
 
@@ -83,12 +83,16 @@ async function findSingleVahicle(req,res){
   let vehicleId = req.params.vehicleid
 
   if (vehicleId){
-    return res.json({msg:"vehicleid roungh or vehicals not found"})
+    return res.json({msg:"vehicleid roungh or vehicals not found",error:true})
   }
 
   let findvehicle = await Vehicle.findOne({where:{id:vehicleId}})
+  
+  if(!findvehicle){
+    return res.josn({msg:"vehicle not found",error:true})
+  }
 
-  return res.json({msg:findvehicle})
+  return res.json({msg:findvehicle,error:false})
   
 }
 
@@ -102,17 +106,17 @@ async function deleteVehicle(req,res) {
   // console.log(vehicle);
 
   if(!vehicle){
-    return res.json({msg:"vehicle id not find"})
+    return res.json({msg:"vehicle id not find",error:true})
   }
   if (vehicle.driver_id !== driverId) {
-    return res.status(403).json({ msg: "Unauthorized: You cannot delete this vehicle" });
+    return res.status(403).json({ msg: "Unauthorized: You cannot delete this vehicle" ,error:true});
   }
   let deleteVehicle = await Vehicle.destroy({
     where: { id: vehicleId }
   });
   
 
-  return res.json({msg:"vehicle delete successfull" , deleteVehicle})
+  return res.json({msg:"vehicle delete successfull" , deleteVehicle,error:false})
 
 }
 module.exports = {

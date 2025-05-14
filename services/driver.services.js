@@ -78,9 +78,9 @@ async function uploadDriverDocumentsService(driverId, files) {
 
     const newDocument = await driverDocumetModel.create({
         driver_id: driverId,
-        pancard: pancardUrl,
-        aadharcard_front: aadharFrontUrl,
-        aadharcard_back: aadharBackUrl
+        pancard: pancardUrl ? pancardUrl : null ,
+        aadharcard_front: aadharFrontUrl? aadharFrontUrl :null,
+        aadharcard_back: aadharBackUrl ? aadharBackUrl :null
     });
 
     return newDocument;

@@ -3,7 +3,7 @@ const sequelize = require("../config/db");
 const { DataTypes } = require("sequelize");
 
 const Payment = sequelize.define("Payments", {
-  id: {
+  payment_id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
@@ -39,6 +39,10 @@ const Payment = sequelize.define("Payments", {
   paid_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  cancel_at: {
+    type: DataTypes.DATE,
+    defaultValue:null
   }
 }, {
   tableName: 'payments',

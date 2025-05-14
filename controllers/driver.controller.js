@@ -5,13 +5,11 @@ const driverDocumetModel = require("../models/driverdocument.model")
 const Vehicle = require("../models/vehicle.model")
 const reviews = require("../models/review.model")
 
-const { findDriverUsernameandEmail, driverIdFromRequest, updateProfileImageService, uploadDriverDocumentsService, updateDriverDocumentsService } = require("../services/driver.services");
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt");
-const { where } = require("sequelize");
-const { jwtTokenCreate } = require("../utills/jwtToken.utill");
 const review = require("../models/review.model")
 const cloudinary = require("cloudinary").v2
+const { driverIdFromRequest, updateProfileImageService, uploadDriverDocumentsService, updateDriverDocumentsService } = require("../services/driver.services");
+
+
 
 // for uploaddin profile image setup
 cloudinary.config({
@@ -25,7 +23,7 @@ async function driverProfilUpdate(req, res) {
     const driverId = driverIdFromRequest(req,res)
 
     if (!driverId) {
-        return res.json({ msg: "driver id not enter by user" })
+        return res.json({ msg: "driver id is not enter " , error:true })
     }
 
     // const { first_name, last_name, email, profile, phone } = req.body
@@ -40,13 +38,13 @@ async function driverProfilUpdate(req, res) {
 
 
     if (!first_name && !last_name && !email && !profile && !phone && !file) {
-        return res.json({ msg: "no fild for update atleast enter one fild for update" })
+        return res.json({ msg: "no fild for update atleast enter one fild for update", error:true})
     }
 
     let driver = await drivers.findOne({ where: { id: driverId } })
 
     if (!driver) {
-        return res.json({ msg: "driver id not found" })
+        return res.json({ msg: "driver id not found", error:true })
     }
 
     let updatedriver = await driver.update({
@@ -58,7 +56,7 @@ async function driverProfilUpdate(req, res) {
 
     })
 
-    return res.json({ msg: "driver update successfull", updatedriver })
+    return res.json({ msg: "driver update successfull", updatedriver , error:false})
 }
 
 
@@ -71,7 +69,7 @@ async function driverLocations(req, res) {
     console.log(driverId);
 
     if (!latitude || !longitude) {
-        return res.json({ msg: "please enter both latitude and longitude" })
+        return res.json({ msg: "please enter both latitude and longitude" , error:true})
     }
 
     const locationcreate = await driverlocation.create({
@@ -81,7 +79,7 @@ async function driverLocations(req, res) {
         longitude
     })
 
-    return res.json({ msg: "driver location add", locationcreate })
+    return res.json({ msg: "driver location add", locationcreate , error:false})
 
 }
 
@@ -100,17 +98,15 @@ async function getDriverAllLocation(req, res) {
         });
 
         if (!driver) {
-            return { message: 'Driver not found' };
+            return { message: 'Driver not found', error:true };
         }
 
-        return res.json({ driver });
+        return res.json({ driver, error:false });
     } catch (error) {
         console.error(error);
-        return { message: 'Error fetching data' };
+        return { message: 'Error fetching data' , error:true};
     }
 }
-
-
 
 
 async function driverUpdateProfileImage(req, res) {
@@ -118,20 +114,20 @@ async function driverUpdateProfileImage(req, res) {
         const file = req?.files?.profileimage;
 
         if (!file) {
-            return res.status(400).json({ msg: "Please select an image" });
+            return res.status(400).json({ msg: "Please select an image" , error:true});
         }
 
         const driverId = driverIdFromRequest(req, res);
-        const maxSize = 10 * 1024 * 1024;
+        const maxSize = 1 * 1024 * 1024;
 
         if (file.size > maxSize) {
-            return res.status(400).json({ msg: "Your image is too large. Max allowed size is 10MB." });
+            return res.status(400).json({ msg: "Your image is too large. Max allowed size is 10MB." , error:true});
         }
 
         const driver = await drivers.findOne({ where: { id: driverId } });
 
         if (!driver) {
-            return res.status(404).json({ msg: "Driver not found" });
+            return res.status(404).json({ msg: "Driver not found" , error:true});
         }
 
         const url = driver.profile_image || "";
@@ -143,7 +139,7 @@ async function driverUpdateProfileImage(req, res) {
 
         const updateProfile = await driver.update({ profile_image: uploadResult.url });
 
-        return res.json({ msg: "Image updated successfully", url: uploadResult.url });
+        return res.json({ msg: "Image updated successfully", url: uploadResult.url , error:false});
 
     } catch (err) {
         console.error("Error updating profile image:", err);
@@ -167,7 +163,7 @@ async function driverDocument(req, res) {
         const aadharBackFile = req.files?.aadharback || null;
 
         if (!pancardFile && (!aadharFrontFile || !aadharBackFile)) {
-            return res.status(400).json({ msg: "Please upload required documents." });
+            return res.status(400).json({ msg: "Please upload required documents." , error:true});
         }
 
         const result = await uploadDriverDocumentsService(driverId, {
@@ -176,17 +172,15 @@ async function driverDocument(req, res) {
             aadharBackFile
         });
 
-        return res.json({ msg: "File upload successful", data: result });
+        return res.json({ msg: "File upload successful", data: result, error:false });
 
     } catch (error) {
         console.error("Document Upload Error:", error);
-        return res.status(500).json({ msg: error.message || "Internal Server Error" });
+        return res.status(500).json({ msg: error.message || "Internal Server Error", error:true });
     }
 }
 
-module.exports = {
-    driverDocument
-};
+
 
 // update driver documents
 
@@ -204,17 +198,12 @@ async function updateDriverDocument(req, res) {
             aadharBackFile
         });
 
-        return res.json({ msg: "Driver documents updated successfully", data: updatedDocument });
+        return res.json({ msg: "Driver documents updated successfully", data: updatedDocument , error:false});
     } catch (error) {
         console.error("Update Document Error:", error);
-        return res.status(500).json({ msg: error.message || "Failed to update documents" });
+        return res.status(500).json({ msg: error.message || "Failed to update documents", error:true });
     }
 }
-
-module.exports = {
-    updateDriverDocument
-};
-
 
 async function driverAllInformation(req, res) {
 
@@ -236,10 +225,10 @@ async function driverAllInformation(req, res) {
         });
 
         if (!driverData) {
-            return { message: 'Driver not found' };
+            return { message: 'Driver not found',error:true};
         }
 
-        return res.json({ driverData });
+        return res.json({ driverData,error:false });
     } catch (error) {
         console.error('Error fetching driver info:', error);
         throw new Error('Error fetching driver info');
@@ -255,9 +244,9 @@ async function AllDriverReviews(req, res) {
     const findreview = await reviews.findAll({ where: { driver_id: driverId } })
 
     if (!findreview) {
-        return res.json({ msg: "driver have not review" })
+        return res.json({ msg: "driver have not review" ,error:true})
     }
-    return res.json({ findreview })
+    return res.json({ findreview ,error:false})
 }
 
 

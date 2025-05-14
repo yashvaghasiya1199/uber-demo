@@ -24,10 +24,6 @@ async function emailService (email,otp) {
 }
 
 
-
-
-
-
 module.exports = {
     emailService,
 }

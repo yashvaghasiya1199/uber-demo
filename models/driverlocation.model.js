@@ -2,7 +2,7 @@ const { DataTypes, UUID, DECIMAL } = require("sequelize")
 const sequelize = require("../config/db")
 
 const driverlocation = sequelize.define('driverlocation', {
-    id: {
+    location_id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,

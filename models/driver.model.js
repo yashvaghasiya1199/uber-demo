@@ -56,31 +56,5 @@ const Driver = sequelize.define('Driver', {
   timestamps: true,
 });
 
-Driver.hasMany(Vehicle, { foreignKey: 'driver_id'   });
-Vehicle.belongsTo(Driver, { foreignKey: 'driver_id' });
-
-//  for driver's all information
-Driver.hasOne(require('./driverdocument.model'), { 
-  foreignKey: 'driver_id', 
-  as: 'driverdocument' 
-});
-
-Driver.hasMany(require('./vehicle.model'), { 
-  foreignKey: 'driver_id', 
-  as: 'vehicles' 
-});
-DriverDocument.belongsTo(Driver, { 
-  foreignKey: 'driver_id', 
-  as: 'driver' 
-});
-Vehicle.belongsTo(Driver, { 
-  foreignKey: 'driver_id', 
-  as: 'driver' 
-});
-
-
-
-Driver.hasMany(DriverLocation, { foreignKey: 'driver_id' });
-DriverLocation.belongsTo(Driver, { foreignKey: 'driver_id' });
 
 module.exports = Driver;

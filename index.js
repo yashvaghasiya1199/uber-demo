@@ -46,7 +46,7 @@ const startServer = async () => {
   //  route
   app.use("/api/auth" , authRoute)
 
-  app.use("/api/user" ,userAuth,userRoute)
+  app.use("/api/user" ,userAuth, userRoute)
 
   app.use("/api/driver" ,driverAuth, driverRoute)
 
@@ -56,7 +56,7 @@ const startServer = async () => {
 
   app.use("/api/review" , userAuth , reviewRoute)
   
-  app.use("/api/payment" , paymentRoute)
+  app.use("/api/payment" ,userAuth, paymentRoute)
 
 
 

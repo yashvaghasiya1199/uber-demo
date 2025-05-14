@@ -2,7 +2,7 @@
 const { DataTypes, DECIMAL } = require("sequelize");
 const sequelize = require("../config/db");
 
-const ride = sequelize.define("ride", {
+const ride = sequelize.define("rides", {
   ride_id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -53,10 +53,9 @@ const ride = sequelize.define("ride", {
     defaultValue: null
   }
 }, {
-  tableName: "ride",
+  tableName: "rides",
   timestamps: true
 });
 
-ride.hasMany(require("./review.model"), { foreignKey: 'ride_id' });
 
 module.exports = ride;
