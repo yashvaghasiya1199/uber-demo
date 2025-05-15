@@ -5,7 +5,6 @@ const User = require("../models/user.model");
 const driverLocation = require("../models/driverlocation.model")
 const reviews = require("../models/review.model")
 const { ValidationError, DatabaseError } = require("sequelize");
-const { Op, literal } = require("sequelize");
 const { userIdFromRequest } = require("../services/user.services");
 const { calculateDistance, distanceCondition } = require("../services/ride.service");
 
@@ -146,7 +145,7 @@ async function userallRide(req, res) {
 }
 
 async function deleteRide(req, res) {
-  const rideId = req.params.rideid;
+  const rideId = req.params.id;
 
   if (!rideId) {
     return res.json({ msg: "please provide rideid", error: true });

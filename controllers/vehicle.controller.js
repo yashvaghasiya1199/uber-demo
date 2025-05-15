@@ -33,7 +33,7 @@ async function addVehicle(req, res) {
 
 async function updateVehicle(req, res) {
 
-  const vehicleId = req.params.vehicleid
+  const vehicleId = req.params.id
 
   const { type, model, registration_number, color } = req.body
 
@@ -80,7 +80,7 @@ async function getDriverAllVehicles(req,res) {
 
 async function findSingleVahicle(req,res){
 
-  let vehicleId = req.params.vehicleid
+  let vehicleId = req.params.id
 
   if (!vehicleId){
     return res.json({msg:"vehicleid roungh or vehicals not found",error:true})
@@ -98,7 +98,7 @@ async function findSingleVahicle(req,res){
 
 async function deleteVehicle(req,res) {
   
-  const vehicleId =  req.params.vehicleid
+  const vehicleId =  req.params.id
 
   const driverId = driverIdFromRequest(req,res)
   

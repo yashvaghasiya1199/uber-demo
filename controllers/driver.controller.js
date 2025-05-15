@@ -4,19 +4,10 @@ const drivers = require("../models/driver.model")
 const driverDocumetModel = require("../models/driverdocument.model")
 const Vehicle = require("../models/vehicle.model")
 const reviews = require("../models/review.model")
-
-const review = require("../models/review.model")
-const cloudinary = require("cloudinary").v2
+const {cloudinary,configureCloudinary} = require("../utills/cloudinary.util")
 const { driverIdFromRequest, updateProfileImageService, uploadDriverDocumentsService, updateDriverDocumentsService } = require("../services/driver.services");
-
-
-
-// for uploaddin profile image setup
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
-});
+const { sizeLimit } = require("../utills/driver.util")
+const { fn, col } = require("sequelize")
 
 async function driverProfilUpdate(req, res) {
 
@@ -27,7 +18,7 @@ async function driverProfilUpdate(req, res) {
     }
 
     // const { first_name, last_name, email, profile, phone } = req.body
-
+    
     const {
         first_name,
         last_name,
@@ -118,12 +109,8 @@ async function driverUpdateProfileImage(req, res) {
         }
 
         const driverId = driverIdFromRequest(req, res);
-        const maxSize = 1 * 1024 * 1024;
-
-        if (file.size > maxSize) {
-            return res.status(400).json({ msg: "Your image is too large. Max allowed size is 10MB." , error:true});
-        }
-
+        
+           const limitedSize =  sizeLimit(file,res)
         const driver = await drivers.findOne({ where: { id: driverId } });
 
         if (!driver) {
@@ -146,11 +133,6 @@ async function driverUpdateProfileImage(req, res) {
         return res.status(500).json({ msg: "Something went wrong" });
     }
 }
-
-module.exports = {
-    driverUpdateProfileImage
-};
-
 
 //  driver's document uploads
 
@@ -207,7 +189,7 @@ async function updateDriverDocument(req, res) {
 
 async function driverAllInformation(req, res) {
 
-    const driverId = req.params.driverId
+    const driverId = req.params.id
 
     try {
         const driverData = await drivers.findOne({
@@ -233,18 +215,46 @@ async function driverAllInformation(req, res) {
     }
 };
 
+// average reviews
 async function AllDriverReviews(req, res) {
+    try {
+        const driverId = driverIdFromRequest(req, res);
+        console.log(driverId);
 
-    const driverId = driverIdFromRequest(req,res)
-    console.log(driverId);
+        // Get all reviews for the driver
+        const findreview = await reviews.findAll({
+            where: {
+                driver_id: driverId,
+                deleted_at: null, // Ignore soft-deleted reviews
+            },
+        });
 
+        // If no reviews found
+        if (!findreview || findreview.length === 0) {
+            return res.json({ msg: "Driver has no reviews", error: true });
+        }
 
-    const findreview = await reviews.findAll({ where: { driver_id: driverId } })
+        // Calculate average rating
+        const avgResult = await reviews.findOne({
+            attributes: [[fn("AVG", col("rating")), "average_rating"]],
+            where: {
+                driver_id: driverId,
+                deleted_at: null,
+            },
+            raw: true,
+        });
 
-    if (!findreview) {
-        return res.json({ msg: "driver have not review" ,error:true})
+        const averageRating = parseFloat(avgResult.average_rating).toFixed(2);
+
+        return res.json({
+            reviews: findreview,
+            averageRating,
+            error: false,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Server error", error: true });
     }
-    return res.json({ findreview ,error:false})
 }
 
 

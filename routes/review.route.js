@@ -5,7 +5,7 @@ const route = express.Router()
 
 route.post("/postreview" , postReview)
 
-route.delete("/delete/:reviewid" , deleteReview)
+route.delete("/delete/:id" , deleteReview)
 
 
 module.exports = route

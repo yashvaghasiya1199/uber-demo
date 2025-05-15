@@ -2,14 +2,8 @@ const driver = require("../models/driver.model")
 const {Op} = require("sequelize")
 const driverDocumetModel = require("../models/driverdocument.model")
 const jwt = require("jsonwebtoken")
-const cloudinary = require("cloudinary").v2
+const {cloudinary,configureCloudinary} = require("../utills/cloudinary.util")
 
-// for uploading profile image setup
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
-});
 
 async function findDriverUsernameandEmail(emailorusername){
   

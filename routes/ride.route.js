@@ -5,11 +5,12 @@ const route = express.Router()
 route.post("/create" , createRide)
 
 //  find other driver who readius in 10 km accorrding to user latitude and longitude
-route.get("/findride" , findRide )
+route.get("/nearby-drivers" , findRide )
 
-route.delete("/delete/:rideid" , deleteRide )
+route.delete("/delete/:id" , deleteRide )
 
-route.get("/userallride" , userallRide)
+//user all rides
+route.get("/rides" , userallRide)
 
 
 module.exports = route

@@ -4,12 +4,11 @@ const bcrypt = require('bcrypt');
 const drivers = require("../models/driver.model")
 const review = require("../models/review.model");
 const nodemailer = require("nodemailer");
-const cloudinary = require("cloudinary").v2
 const { findUserByEmailorUsername } = require("../services/user.services");
 const { jwtTokenCreate } = require('../utills/jwtToken.utill');
 const { findDriverUsernameandEmail } = require("../services/driver.services");
 const { emailService } = require('../services/email.service');
-
+const {cloudinary,configureCloudinary} = require("../utills/cloudinary.util")
 
 // USER AUTH
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -141,13 +140,6 @@ async function changePassword(req, res) {
 // DRIVER AUTH
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// for uploaddin profile image setup
-cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
-});
-
 
 
 async function driverSignup(req, res) {
@@ -168,12 +160,7 @@ async function driverSignup(req, res) {
     }
 
     // if file > 1 mb then user can't upload image
-
-    const maxSize = 1 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-        return res.status(400).json({msg:"Your image is too large. Max allowed size is 1MB.",error:true});
-    }
+    const limitedSize =  sizeLimit(file,res)
 
     if (!req.files || !req.files.profileimage) {
         return res.status(400).json({ msg: "Profile image is required." ,error:true});

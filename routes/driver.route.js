@@ -9,16 +9,16 @@ route.put("/profile-image" , driverUpdateProfileImage)
 
 route.post("/addlocation"  , driverLocations )
 
-route.post("/adddocument" ,driverDocument )
+route.post("/documents" ,driverDocument )
 
 route.put("/updatedocument"  , updateDriverDocument)
 
-route.get("/driverinfo/:driverId" , driverAllInformation )
+route.get("/driverinfo/:id" , driverAllInformation )
 
 //  all location of one driver
-route.get("/alllocation"  ,getDriverAllLocation )
+route.get("/driver-locations"  ,getDriverAllLocation )
 
-route.get("/allreview" , AllDriverReviews)
+route.get("/reviews" , AllDriverReviews)
 
 
 module.exports = route

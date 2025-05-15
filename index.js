@@ -8,6 +8,8 @@ require("dotenv").config()
 const db = require("./config/associate")
 
 
+
+
 // routes
 const userRoute    = require("./routes/user.route")
 const driverRoute  = require("./routes/driver.route")
