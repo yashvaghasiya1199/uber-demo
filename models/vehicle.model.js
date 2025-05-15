@@ -37,6 +37,7 @@ const Vehicle = sequelize.define('Vehicle', {
   },
   deleted_at: {
     type: DataTypes.DATE,
+    defaultValue:null
   },
 }, {
 

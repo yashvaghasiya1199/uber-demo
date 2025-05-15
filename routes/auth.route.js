@@ -17,6 +17,6 @@ route.post("/driver/login" , driverLogin )
 
 route.put("/driver/forgot-password" , driverSendOtp)
 
-route.put("/driver/update-password" , driverChangePassword)
+route.put("/driver/change-password" , driverChangePassword)
 
 module.exports = route

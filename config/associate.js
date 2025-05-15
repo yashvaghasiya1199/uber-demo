@@ -4,7 +4,7 @@ const driverDocument = require("../models/driverdocument.model")
 const driverLocation = require("../models/driverlocation.model")
 const Rides = require("../models/ride.model")
 const User = require("../models/user.model")
-
+const Review = require("../models/review.model")
 
 // driver and vehicle
 Driver.hasMany(Vehicle, {
@@ -46,4 +46,13 @@ Rides.belongsTo(Driver, {
 // ride and vehicles
 Rides.belongsTo(Vehicle, {
   foreignKey: 'vehicle_id'
+});
+
+// ride and reviews
+Rides.hasMany(Review, {
+  foreignKey: 'ride_id',
+  onDelete: 'CASCADE'
+});
+Review.belongsTo(Rides, {
+  foreignKey: 'ride_id'
 });

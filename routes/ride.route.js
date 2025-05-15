@@ -7,7 +7,7 @@ route.post("/create" , createRide)
 //  find other driver who readius in 10 km accorrding to user latitude and longitude
 route.get("/findride" , findRide )
 
-route.delete("/deleteride/:rideid" , deleteRide )
+route.delete("/delete/:rideid" , deleteRide )
 
 route.get("/userallride" , userallRide)
 

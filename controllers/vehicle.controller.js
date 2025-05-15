@@ -27,7 +27,7 @@ async function addVehicle(req, res) {
   })
 
 
-  return res.json({ msg: "add vehical", create ,error:false})
+  return res.json({ msg: "add vehicle", create ,error:false})
   
 }
 
@@ -82,11 +82,11 @@ async function findSingleVahicle(req,res){
 
   let vehicleId = req.params.vehicleid
 
-  if (vehicleId){
+  if (!vehicleId){
     return res.json({msg:"vehicleid roungh or vehicals not found",error:true})
   }
 
-  let findvehicle = await Vehicle.findOne({where:{id:vehicleId}})
+  let findvehicle = await Vehicle.findOne({where:{vehicle_id:vehicleId}})
   
   if(!findvehicle){
     return res.josn({msg:"vehicle not found",error:true})
@@ -102,7 +102,7 @@ async function deleteVehicle(req,res) {
 
   const driverId = driverIdFromRequest(req,res)
   
-  let vehicle = await Vehicle.findOne({where:{id:vehicleId}})
+  let vehicle = await Vehicle.findOne({where:{vehicle_id:vehicleId}})
   // console.log(vehicle);
 
   if(!vehicle){
@@ -111,9 +111,8 @@ async function deleteVehicle(req,res) {
   if (vehicle.driver_id !== driverId) {
     return res.status(403).json({ msg: "Unauthorized: You cannot delete this vehicle" ,error:true});
   }
-  let deleteVehicle = await Vehicle.destroy({
-    where: { id: vehicleId }
-  });
+
+  let removeVehicles = await vehicals.destroy({where:{vehicle_id:vehicleId}})
   
 
   return res.json({msg:"vehicle delete successfull" , deleteVehicle,error:false})

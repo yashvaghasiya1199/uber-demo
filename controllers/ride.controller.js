@@ -3,10 +3,11 @@ const Driver = require("../models/driver.model");
 const Vehicle = require("../models/vehicle.model");
 const User = require("../models/user.model");
 const driverLocation = require("../models/driverlocation.model")
+const reviews = require("../models/review.model")
 const { ValidationError, DatabaseError } = require("sequelize");
 const { Op, literal } = require("sequelize");
 const { userIdFromRequest } = require("../services/user.services");
-const { calculateDistance, distance, distanceCondition } = require("../services/ride.service");
+const { calculateDistance, distanceCondition } = require("../services/ride.service");
 
 const RATE_PER_KM = 30;
 async function createRide(req, res) {
@@ -24,7 +25,7 @@ async function createRide(req, res) {
     // Decode user ID from token
     const userId = userIdFromRequest(req, res)
     console.log(userId);
-    
+
 
     // Calculate distance and fare
     const distance = calculateDistance(
@@ -51,13 +52,13 @@ async function createRide(req, res) {
       completed_at: null
     });
 
-    return res.json({ msg: "Ride created successfully", ride: rideCreate ,error:false});
+    return res.json({ msg: "Ride created successfully", ride: rideCreate, error: false });
 
   } catch (error) {
 
     if (error instanceof ValidationError) {
       const messages = error.errors.map(e => e.message);
-      return res.status(400).json({ msg: "Validation error", errors: messages ,error:true});
+      return res.status(400).json({ msg: "Validation error", errors: messages, error: true });
     }
 
     // Sequelize database (SQL/Postgres) error
@@ -66,12 +67,12 @@ async function createRide(req, res) {
       return res.status(400).json({
         msg: "Database error",
         error: error.original?.message || "Unknown database error",
-        error:true
+        error: true
       });
     }
 
     console.error("Error creating ride:", error);
-    return res.status(500).json({ msg: "Internal server error" ,error:true});
+    return res.status(500).json({ msg: "Internal server error", error: true });
   }
 }
 
@@ -87,7 +88,7 @@ async function findRide(req, res) {
 
   try {
     const drivers = await driverLocation.findAll({
-      where: distanceCondition(pickup_latitude,pickup_longitude),
+      where: distanceCondition(pickup_latitude, pickup_longitude),
       include: [
         {
           model: Driver,
@@ -116,8 +117,8 @@ async function findRide(req, res) {
 
 // user allrides
 
-async function userallRide(req,res){
-  const userId = userIdFromRequest(req,res)
+async function userallRide(req, res) {
+  const userId = userIdFromRequest(req, res)
   try {
     const rides = await Rides.findAll({
       where: { user_id: userId },
@@ -127,40 +128,45 @@ async function userallRide(req,res){
           attributes: ['user_id', 'first_name', 'last_name', 'email']
         },
         {
-          model: Driver, 
+          model: Driver,
           attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
         },
         {
-          model: Vehicle, 
+          model: Vehicle,
           attributes: ['vehicle_id', 'type', 'model', 'registration_number', 'color']
         }
       ]
     });
 
-    return res.json({rides,error:false});
-    } catch (error) {
+    return res.json({ rides, error: false });
+  } catch (error) {
     console.error("Error fetching user rides:", error);
-    return res.json({error,error:true})
+    return res.json({ error, error: true })
   }
 }
 
 async function deleteRide(req, res) {
+  const rideId = req.params.rideid;
 
-  const rideid = req.params.rideid
-
-  if (!rideid) {
-    return res.json({ msg: "please provide rideid" ,error:true})
+  if (!rideId) {
+    return res.json({ msg: "please provide rideid", error: true });
   }
 
-  const findRideId = await Rides.findOne({ where: { ride_id: rideid } })
+  try {
+    const findRideId = await Rides.findOne({ where: { ride_id: rideId } });
 
-  if (!findRideId) {
-    return res.json({ msg: "ride id not found" ,error:true})
+    if (!findRideId) {
+      return res.json({ msg: "ride id not found", error: true });
+    }
+    // const reviewRemove = await reviews.destroy({ where: { ride_id: rideId } })
+    const RideRemove = await Rides.destroy({ where: { ride_id: rideId } })
+
+
+    return res.json({ msg: "ride is deleted", error: false });
+  } catch (err) {
+    console.error("Delete ride error:", err);
+    return res.status(500).json({ msg: "Error deleting ride", error: true, detail: err.message });
   }
-  await findRideId.destroy()
-
-  return res.json({ msg: "ride is deleted" ,error:false})
-
 }
 
 
